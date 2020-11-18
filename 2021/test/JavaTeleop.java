@@ -62,16 +62,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
-    private DcMotor launchMech;
-    private DcMotor intakeMech;
-
-    private DcMotor wobbleLift;
-    private Servo wobbleGrab;
-    private boolean wobbleGrabIsOpen = true;
-
-    private final double OPEN_WOBBLE_SERVO = (float) 128.0 / 256.0;
-    private final double CLOSE_WOBBLE_SERVO = (float) 0.0 /256.0;
-    //^ these numbers ARE NOT CORRECT!
+    private DcMotor launchMechRight;
+    private DcMotor launchMechLeft;
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -93,24 +85,19 @@ public class JavaTeleop extends StandardFourMotorRobot {
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
-        //mapping wobble grab servo
-        wobbleGrab = hardwareMap.servo.get("wobbleGrabServo");
-
         //mapping the launch mech and intake mech
-        launchMech = hardwareMap.get(DcMotor.class, "launchMech");
-        intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
+        launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
+        launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
-        //mapping wobble lift motor
-        wobbleLift = hardwareMap.get(DcMotor.class, "wobbleLift");
+        //**CONTINUE FROM HERE**
 
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intakeMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        wobbleLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -121,7 +108,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
         intake.encodersOn();
 
         */
-
 
         TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
 
