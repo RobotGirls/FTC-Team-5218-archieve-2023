@@ -62,8 +62,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
-    private DcMotor launchMechRight;
+    private DcMotor launchMechRight; // ultraplanetary motor
     private DcMotor launchMechLeft;
+
+    private DcMotor intakeRight; // hexcore motor
+    private DcMotor intakeLeft;
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -89,7 +92,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
         launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
         launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
-        //**CONTINUE FROM HERE**
+        intakeRight = hardwareMap.get(DcMotor.class, "intakeRight");
+        intakeLeft = hardwareMap.get(DcMotor.class, "intakeLeft");
 
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -98,6 +102,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -141,9 +147,28 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         launchMechRight.setPower(0);
                         launchMechLeft.setPower(0);
                         break;
+                    case RIGHT_TRIGGER_DOWN:
+                        // enable intake mech
+                        intakeRight.setPower(1);
+                        intakeLeft.setPower(-1);
+                        break;
+                    case RIGHT_TRIGGER_UP:
+                    case RIGHT_BUMPER_UP:
+                        // disable intake ejection
+                        // disable intake mech
+                        intakeRight.setPower(0);
+                        intakeLeft.setPower(0);
+                        break;
+                    case RIGHT_BUMPER_DOWN:
+                        // enable intake ejection
+                        intakeRight.setPower(-1);
+                        intakeLeft.setPower(1);
+                        break;
                 }
             }
         });
     }
 }
+
+// check on drivetrain next meeting: reverse vs. regular mechanum scheme
 
