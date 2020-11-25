@@ -122,7 +122,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
 
-        //=== continue from here ===
         this.addTask(drivetask);
 
         //gamepad 1
@@ -134,48 +133,13 @@ public class JavaTeleop extends StandardFourMotorRobot {
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
                         // enable the launch mech
-                        launchMech.setPower(1);
+                        launchMechRight.setPower(1);
+                        launchMechLeft.setPower(-1);
                         break;
                     case BUTTON_X_UP:
                         // stop the launch mech
-                        launchMech.setPower(0);
-                        break;
-                    case BUTTON_Y_DOWN:
-                        //enable the intake mech
-                        intakeMech.setPower(1);
-                    case BUTTON_Y_UP:
-                        // stop the intake mech
-                        intakeMech.setPower(0);
-                        break;
-                    case BUTTON_A_DOWN:
-                        //enable the outtake mech
-                        intakeMech.setPower(-1);
-                        break;
-                    case BUTTON_A_UP:
-                        // stop the outtake mech
-                        intakeMech.setPower(0);
-                        break;
-                    case BUTTON_B_DOWN:
-                        //wobble servo close OR open depending on boolean toggle;
-                        if (wobbleGrabIsOpen) {
-                            wobbleGrab.setPosition(CLOSE_WOBBLE_SERVO);
-                            wobbleGrabIsOpen = false;
-                        } else {
-                            wobbleGrab.setPosition(OPEN_WOBBLE_SERVO);
-                            wobbleGrabIsOpen = true;
-                        }
-                        break;
-                    case RIGHT_BUMPER_DOWN:
-                        //wobble lift up
-                        wobbleLift.setPower(1); //might have to be changed based on testing
-                        break;
-                    case RIGHT_TRIGGER_DOWN:
-                        //wobble lift down
-                        wobbleLift.setPower(-1); //might have to be changed based on testing
-                        break;
-                    case RIGHT_BUMPER_UP:
-                    case RIGHT_TRIGGER_UP:
-                        wobbleLift.setPower(0);
+                        launchMechRight.setPower(0);
+                        launchMechLeft.setPower(0);
                         break;
                 }
             }
