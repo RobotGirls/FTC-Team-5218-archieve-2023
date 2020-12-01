@@ -4,22 +4,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout RC
-        uses: actions/checkout@v2
-        with:
-          repository: cmacfarl/FtcRobotController
-          ref: master-5218
-          path: ws
       - name: Checkout terkel
         uses: actions/checkout@v2
         with:
           repository: cmacfarl/terkel
           ref: master
-          path: ws
+          path: ws/terkel
+
       - name: Checkout 5218
         uses: actions/checkout@v2
         with:
-          path: ws
+          path: ws/FTC-Team-5218
+
+      - name: Checkout RC
+        uses: actions/checkout@v2
+        with:
+          repository: cmacfarl/FtcRobotController
+          ref: master-5218
+          path: ws/FtcRobotController
+          
       - name: build
         working-directory: ws/FtcRobotController
-        run: ./gradlew build
+        run: ./ws/FtcRobotController/gradlew --project-dir ./ws/FtcRobotController/ build
