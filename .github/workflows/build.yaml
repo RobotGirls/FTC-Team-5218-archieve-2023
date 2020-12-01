@@ -8,22 +8,22 @@ jobs:
     steps:
       - name: Checkout RC
         uses: actions/checkout@v2
-          with:
-            repository: cmacfarl/FtcRobotController
-            ref: master-5218 
-            path: ws 
+        with:
+          repository: cmacfarl/FtcRobotController
+          ref: master-5218 
+          path: ws 
       
       -name: Checkout terkel
        uses: actions/checkout@v2
-         with:
-           repository: cmacfarl/terkel
-           ref: master
-           path: ws
+       with:
+         repository: cmacfarl/terkel
+         ref: master
+         path: ws
 
       -name: Checkout 5218
        uses: actions/checkout@v2
-         with:
-           path: ws 
+       with:
+         path: ws 
 
        -name: build
         working-directory: ws/FtcRobotController
