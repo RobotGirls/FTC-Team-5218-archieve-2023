@@ -27,7 +27,7 @@ jobs:
         run: pwd && ls
 
       - name: Change dir
-        run: cd FTC-Team-5218/ws/FtcRobotController
+        run: cd ws/FtcRobotController
         
       - name: Working dir
         run: pwd
