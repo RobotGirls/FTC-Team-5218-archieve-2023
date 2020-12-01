@@ -22,7 +22,9 @@ jobs:
           repository: cmacfarl/FtcRobotController
           ref: master-5218
           path: ws/FtcRobotController
-          
+      
+      - name: Working dir
+        run: pwd
+        
       - name: build
-        working-directory: ws/FtcRobotController
-        run: ./ws/FtcRobotController/gradlew --project-dir ./ws/FtcRobotController/ build
+        run: ./gradlew build
