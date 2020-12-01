@@ -23,6 +23,9 @@ jobs:
           ref: master-5218
           path: ws/FtcRobotController
       
+      - name: Change dir
+        run: cd FTC-Team-5218/ws/FtcRobotController
+        
       - name: Working dir
         run: pwd
         
