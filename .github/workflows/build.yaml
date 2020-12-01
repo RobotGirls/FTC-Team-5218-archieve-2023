@@ -33,4 +33,4 @@ jobs:
         run: pwd
         
       - name: build
-        run: ./gradlew build
+        run: ./ws/FtcRobotController/gradlew --project-dir ./ws/FtcRobotController build
