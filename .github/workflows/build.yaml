@@ -1,0 +1,30 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout RC
+        uses: actions/checkout@v2
+          with:
+            repository: cmacfarl/FtcRobotController
+            ref: master-5218 
+            path: ws 
+      
+      -name: Checkout terkel
+       uses: actions/checkout@v2
+         with:
+           repository: cmacfarl/terkel
+           ref: master
+           path: ws
+
+      -name: Checkout 5218
+       uses: actions/checkout@v2
+         with:
+           path: ws 
+
+       -name: build
+        working-directory: ws/FtcRobotController
+        run: ./gradlew build
