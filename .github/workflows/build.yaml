@@ -22,7 +22,10 @@ jobs:
           repository: cmacfarl/FtcRobotController
           ref: master-5218
           path: ws/FtcRobotController
-      
+
+      - name: Show dir
+        run: pwd && ls
+
       - name: Change dir
         run: cd FTC-Team-5218/ws/FtcRobotController
         
