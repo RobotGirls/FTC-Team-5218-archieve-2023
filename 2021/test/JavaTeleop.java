@@ -44,12 +44,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.DeadmanMotorTask;
 import team25core.GamepadTask;
+import team25core.MechanumGearedDrivetrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.RunToEncoderValueTask;
 import team25core.SingleShotTimerTask;
 import team25core.StandardFourMotorRobot;
+import team25core.TankMechanumControlScheme;
 import team25core.TankMechanumControlSchemeReverse;
 import team25core.TeleopDriveTask;
 
@@ -62,14 +64,16 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
-    private DcMotor launchMechRight; // ultraplanetary motor
+    private DcMotor launchMechRight; // ultraplanetary motor, shreya
     private DcMotor launchMechLeft;
 
     private DcMotor intakeRight; // hexcore motor
     private DcMotor intakeLeft;
 
+    private DcMotor violaLaunchMech; //ultraplanetary motor
+
     //private FourWheelDirectDrivetrain drivetrain;
-    //private MechanumGearedDrivetrain drivetrain;
+    private MechanumGearedDrivetrain drivetrain;
 
     private static final int TICKS_PER_INCH = 79;
 
@@ -95,6 +99,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
         intakeRight = hardwareMap.get(DcMotor.class, "intakeRight");
         intakeLeft = hardwareMap.get(DcMotor.class, "intakeLeft");
 
+        violaLaunchMech = hardwareMap.get(DcMotor.class, "violaLaunchMech");
+
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -104,6 +110,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        violaLaunchMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -115,18 +122,24 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         */
 
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
 
         //code for forward mechanum drivetrain:
-        //drivetrain = new MechanumGearedDrivetrain(360, frontRight, rearRight, frontLeft, rearLeft);
+
+        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
+
+        drivetrain = new MechanumGearedDrivetrain(motorMap);
+        drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
+
+        drivetrain.resetEncoders();
+        drivetrain.encodersOn();
+        drivetrain.setCanonicalMotorDirection();
     }
 
     @Override
     public void start() {
 
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
-
-        drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
+        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
 
         this.addTask(drivetask);
 
@@ -138,12 +151,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
-                        // enable the launch mech
+                        // enable shreya's launch mech
                         launchMechRight.setPower(1);
                         launchMechLeft.setPower(-1);
                         break;
                     case BUTTON_X_UP:
-                        // stop the launch mech
+                        // stop shreya's launch mech
                         launchMechRight.setPower(0);
                         launchMechLeft.setPower(0);
                         break;
@@ -164,11 +177,18 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         intakeRight.setPower(-1);
                         intakeLeft.setPower(1);
                         break;
+                    case BUTTON_A_DOWN:
+                        // enable viola's launch mech
+                        violaLaunchMech.setPower(1);
+                        break;
+                    case BUTTON_A_UP:
+                        // stop viola's launch mech
+                        violaLaunchMech.setPower(0);
+                        break;
                 }
             }
         });
     }
 }
 
-// check on drivetrain next meeting: reverse vs. regular mechanum scheme
 
