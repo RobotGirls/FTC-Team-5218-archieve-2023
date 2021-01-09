@@ -68,7 +68,10 @@ public class LaunchMechTest extends Robot {
     //private MechanumGearedDrivetrain drivetrain;
 
     private static final int TICKS_PER_INCH = 79;
-
+    private static final double LAUNCH_POWER_RIGHT_FORWARD = -1.0;
+    private static final double LAUNCH_POWER_LEFT_FORWARD = 1.0;
+    private double launchPowerRight;
+    private double launchPowerLeft;
     @Override
     public void handleEvent(RobotEvent e) {
     }
@@ -77,7 +80,7 @@ public class LaunchMechTest extends Robot {
     public void init() {
 
         super.init();
-        launchMechTelem = telemetry.addData("launch Mech Power", 0);
+        launchMechTelem = telemetry.addData("launch Mech Power Right", 0);
         //mapping the wheels
 //        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
 //        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
@@ -132,9 +135,11 @@ public class LaunchMechTest extends Robot {
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
                         // enable the launch mech
-                        launchMechRight.setPower(1.0);
-                        launchMechLeft.setPower(-1.0);
-                        launchMechTelem.setValue(1.0);
+                        launchPowerLeft = LAUNCH_POWER_LEFT_FORWARD;
+                        launchPowerRight = LAUNCH_POWER_RIGHT_FORWARD;
+                        launchMechRight.setPower(launchPowerRight);
+                        launchMechLeft.setPower(launchPowerLeft);
+                        launchMechTelem.setValue(launchPowerRight);
                         break;
                     case BUTTON_X_UP:
                         // stop the launch mech
