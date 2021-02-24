@@ -110,7 +110,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         */
 
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         //code for forward mechanum drivetrain:
         //drivetrain = new MechanumGearedDrivetrain(360, frontRight, rearRight, frontLeft, rearLeft);
     }
