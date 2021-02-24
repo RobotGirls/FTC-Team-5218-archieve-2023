@@ -63,7 +63,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
     private DcMotor launchMechRight;
-    private DcMotor launchMechLeft;
+   // private DcMotor launchMechLeft;
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -87,7 +87,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //mapping the launch mech and intake mech
         launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
-        launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
+     //   launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
         //**CONTINUE FROM HERE**
 
@@ -97,7 +97,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+       // launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -134,12 +134,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_X_DOWN:
                         // enable the launch mech
                         launchMechRight.setPower(1);
-                        launchMechLeft.setPower(-1);
+                       // launchMechLeft.setPower(-1);
                         break;
                     case BUTTON_X_UP:
                         // stop the launch mech
                         launchMechRight.setPower(0);
-                        launchMechLeft.setPower(0);
+                        //launchMechLeft.setPower(0);
                         break;
                 }
             }
