@@ -1,4 +1,4 @@
-package test;
+package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -18,9 +18,8 @@ import team25core.StandardFourMotorRobot;
 @Autonomous(name = "JavaBotsScrimmage3", group = "Team 5218")
 //@Disabled
 public class JavaAutonomous extends StandardFourMotorRobot {
+//The name is JavaBotsScrimmage3 for autonomous opmodes on the phone
 
-
-    private final static String TAG = "auto code for first scrimmage";
     private MechanumGearedDrivetrain drivetrain1;
     private Telemetry.Item loggingTlm;
     private DeadReckonPath launchLinePath;
@@ -70,7 +69,7 @@ public class JavaAutonomous extends StandardFourMotorRobot {
     {
         launchLinePath = new DeadReckonPath();
         launchLinePath.stop();
-        launchLinePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 80, -STRAIGHT_SPEED);
+        launchLinePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 70, -STRAIGHT_SPEED);
     }
 
 
