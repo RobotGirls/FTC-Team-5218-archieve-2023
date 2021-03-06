@@ -64,6 +64,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
     private DcMotor launchMechRight;
+    private DcMotor intakeMech;
+    private DcMotor conveyorMech;
+    private Servo dispenserMech;
+    private boolean dispenserMechIsOpen = false;
+    private final double OPEN_SERVO = (float) 256.0/256.0;
+    private final double CLOSE_SERVO = (float) 128.0/256.0;
    // private DcMotor launchMechLeft;
 
     //private FourWheelDirectDrivetrain drivetrain;
@@ -88,6 +94,9 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //mapping the launch mech and intake mech
         launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
+        intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
+        conveyorMech = hardwareMap.get(DcMotor.class, "conveyorMech");
+        dispenserMech = hardwareMap.servo.get("dispenserMech");
      //   launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
         //**CONTINUE FROM HERE**
@@ -133,15 +142,41 @@ public class JavaTeleop extends StandardFourMotorRobot {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
 
                 switch (gamepadEvent.kind) {
-                    case BUTTON_X_DOWN:
+                    case BUTTON_Y_DOWN:
                         // enable the launch mech
                         launchMechRight.setPower(1);
                        // launchMechLeft.setPower(-1);
                         break;
-                    case BUTTON_X_UP:
+                    case BUTTON_Y_UP:
                         // stop the launch mech
                         launchMechRight.setPower(0);
                         //launchMechLeft.setPower(0);
+                        break;
+                    case BUTTON_A_DOWN:
+                        // enable the intake mech
+                        intakeMech.setPower(1);
+                        break;
+                    case BUTTON_A_UP:
+                        // stop the intake mech
+                        intakeMech.setPower(0);
+                        break;
+                    case BUTTON_X_DOWN:
+                        // enable the conveyor mech
+                        conveyorMech.setPower(1);
+                        break;
+                    case BUTTON_X_UP:
+                        // stop the conveyor mech
+                        conveyorMech.setPower(0);
+                        break;
+                    case BUTTON_B_DOWN:
+                        // enable the dispenser mech
+                        if(dispenserMechIsOpen) {
+                            dispenserMech.setPosition(CLOSE_SERVO);
+                            dispenserMechIsOpen = false;
+                        } else {
+                            dispenserMech.setPosition(OPEN_SERVO);
+                            dispenserMechIsOpen = true;
+                        }
                         break;
                 }
             }
