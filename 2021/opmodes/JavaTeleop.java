@@ -154,7 +154,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         break;
                     case BUTTON_A_DOWN:
                         // enable the intake mech
-                        intakeMech.setPower(1);
+                        intakeMech.setPower(-1);
                         break;
                     case BUTTON_A_UP:
                         // stop the intake mech
@@ -162,7 +162,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         break;
                     case BUTTON_X_DOWN:
                         // enable the conveyor mech
-                        conveyorMech.setPower(1);
+                        conveyorMech.setPower(-1);
                         break;
                     case BUTTON_X_UP:
                         // stop the conveyor mech
