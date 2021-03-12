@@ -2,6 +2,7 @@ package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -12,18 +13,22 @@ import team25core.DeadReckonTask;
 import team25core.GamepadTask;
 import team25core.MechanumGearedDrivetrain;
 import team25core.RobotEvent;
-import team25core.StandardFourMotorRobot;
-
+import team25core.Robot;
 
 @Autonomous(name = "JavaBotsScrimmage3", group = "Team 5218")
 //@Disabled
-public class JavaAutonomous extends StandardFourMotorRobot {
+public class JavaAutonomous extends Robot {
 //The name is JavaBotsScrimmage3 for autonomous opmodes on the phone
 
     private MechanumGearedDrivetrain drivetrain1;
     private Telemetry.Item loggingTlm;
     private DeadReckonPath launchLinePath;
     private final double STRAIGHT_SPEED = 0.5;
+
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
 
     DeadReckonPath path = new DeadReckonPath();
 
@@ -76,6 +81,11 @@ public class JavaAutonomous extends StandardFourMotorRobot {
     @Override
     public void init()
     {
+        frontLeft = hardwareMap.get(DcMotor.class,"frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class,"frontRight");
+        backLeft = hardwareMap.get(DcMotor.class,"backLeft");
+        backRight = hardwareMap.get(DcMotor.class,"backRight");
+
         //caption: what appears on the phone
         loggingTlm = telemetry.addData("distance traveled", "unknown");
 
