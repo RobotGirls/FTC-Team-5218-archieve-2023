@@ -64,6 +64,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
     private DcMotor launchMechRight;
+    private boolean launchMechOn = false;
     private DcMotor intakeMech;
     private DcMotor conveyorMech;
     private Servo dispenserMech;
@@ -143,14 +144,16 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
                 switch (gamepadEvent.kind) {
                     case BUTTON_Y_DOWN:
-                        // enable the launch mech
-                        launchMechRight.setPower(1);
-                       // launchMechLeft.setPower(-1);
-                        break;
-                    case BUTTON_Y_UP:
-                        // stop the launch mech
-                        launchMechRight.setPower(0);
-                        //launchMechLeft.setPower(0);
+                        // enable and disable the launch mech
+                        if (launchMechOn) {
+                            launchMechRight.setPower(0);
+                            //launchMechLeft.setPower(0);
+                            launchMechOn = false;
+                        } else {
+                            launchMechRight.setPower(1);
+                            //laucnhMechLeft.setPower(-1);
+                            launchMechOn = true;
+                        }
                         break;
                     case BUTTON_A_DOWN:
                         // enable the intake mech
