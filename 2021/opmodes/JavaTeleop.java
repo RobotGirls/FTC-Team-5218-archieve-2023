@@ -64,6 +64,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
     private DcMotor launchMechRight;
+    private DcMotor launchMechLeft;
     private boolean launchMechOn = false;
     private DcMotor intakeMech;
     private DcMotor conveyorMech;
@@ -71,7 +72,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private boolean dispenserMechIsOpen = false;
     private final double OPEN_SERVO = (float) 256.0/256.0;
     private final double CLOSE_SERVO = (float) 128.0/256.0;
-   // private DcMotor launchMechLeft;
+
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -98,7 +99,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
         conveyorMech = hardwareMap.get(DcMotor.class, "conveyorMech");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
-     //   launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
+        launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
         //**CONTINUE FROM HERE**
 
@@ -108,7 +109,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-       // launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -147,11 +148,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         // enable and disable the launch mech
                         if (launchMechOn) {
                             launchMechRight.setPower(0);
-                            //launchMechLeft.setPower(0);
+                            launchMechLeft.setPower(0);
                             launchMechOn = false;
                         } else {
                             launchMechRight.setPower(1);
-                            //laucnhMechLeft.setPower(-1);
+                            launchMechLeft.setPower(-1);
                             launchMechOn = true;
                         }
                         break;
