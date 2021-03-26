@@ -14,6 +14,7 @@ import team25core.GamepadTask;
 import team25core.MechanumGearedDrivetrain;
 import team25core.RobotEvent;
 import team25core.Robot;
+import team25core.SingleShotTimerTask;
 
 @Autonomous(name = "JavaBotsScrimmage3", group = "Team 5218")
 //@Disabled
@@ -34,11 +35,15 @@ public class JavaAutonomous extends Robot {
     private DcMotor backRight;
 
     private DcMotor launchMechRight;
+    private DcMotor launchMechLeft;
     private Servo dispenserMech;
     private boolean dispenserMechIsOpen = false;
     private final double OPEN_SERVO = (float) 256.0/256.0;
     private final double CLOSE_SERVO = (float) 128.0/256.0;
     private int launchCounter = 0;
+
+    private final static int POWERSHOT_TIMER = 1500;
+    SingleShotTimerTask timerTask;
 
     DeadReckonPath path = new DeadReckonPath();
 
@@ -54,14 +59,28 @@ public class JavaAutonomous extends Robot {
         }
     }
 
+    public void startPowerShotTimer()
+    {
+        timerTask = new SingleShotTimerTask(this, POWERSHOT_TIMER){
+            @Override
+            public void handleEvent(RobotEvent e){
+                SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
+                if (event.kind == EventKind.EXPIRED) {
+                    launchMechRight.setPower(0);
+                    launchMechLeft.setPower(0);
+                    closeRingDispenser();
+                }
+            }
+        };
+    }
     public void shootPowerShot()
     {
-            //might need to reorder or rearrange actions in this method based on testing
-            RobotLog.i("hits the power shot");
-            openRingDispenser();
-            launchMechRight.setPower(1.0);
-            launchMechRight.setPower(0);
-            closeRingDispenser();
+        addTask(timerTask);
+        //might need to reorder or rearrange actions in this method based on testing
+        RobotLog.i("hits the power shot");
+        openRingDispenser();
+        launchMechRight.setPower(1.0);
+        launchMechLeft.setPower(-1.0);
     }
 
     public void openRingDispenser()
@@ -143,9 +162,11 @@ public class JavaAutonomous extends Robot {
         backRight = hardwareMap.get(DcMotor.class,"backRight");
 
         launchMechRight = hardwareMap.get(DcMotor.class,"launchMechRight");
+        launchMechLeft = hardwareMap.get(DcMotor.class,"launchMechLeft");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
 
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //caption: what appears on the phone
         loggingTlm = telemetry.addData("distance traveled", "unknown");
@@ -162,6 +183,9 @@ public class JavaAutonomous extends Robot {
 
         //initializing autonomous path
         initPath();
+
+        //initialize powershot timer
+        startPowerShotTimer();
     }
 
 
