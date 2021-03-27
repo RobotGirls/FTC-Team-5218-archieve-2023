@@ -67,7 +67,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private DcMotor launchMechLeft;
     private boolean launchMechOn = false;
     private DcMotor intakeMech;
-    private DcMotor conveyorMech;
+    //private DcMotor conveyorMech;
     private Servo dispenserMech;
     private boolean dispenserMechIsOpen = false;
     private final double OPEN_SERVO = (float) 256.0/256.0;
@@ -97,7 +97,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //mapping the launch mech and intake mech
         launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
         intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
-        conveyorMech = hardwareMap.get(DcMotor.class, "conveyorMech");
+        //conveyorMech = hardwareMap.get(DcMotor.class, "conveyorMech");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
         launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
@@ -164,14 +164,14 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         // stop the intake mech
                         intakeMech.setPower(0);
                         break;
-                    case BUTTON_X_DOWN:
+                    //case BUTTON_X_DOWN:
                         // enable the conveyor mech
-                        conveyorMech.setPower(-1);
-                        break;
-                    case BUTTON_X_UP:
+                        //conveyorMech.setPower(-1);
+                        //break;
+                    //case BUTTON_X_UP:
                         // stop the conveyor mech
-                        conveyorMech.setPower(0);
-                        break;
+                        //conveyorMech.setPower(0);
+                        //break;
                     case BUTTON_B_DOWN:
                         // enable the dispenser mech
                         if(dispenserMechIsOpen) {
