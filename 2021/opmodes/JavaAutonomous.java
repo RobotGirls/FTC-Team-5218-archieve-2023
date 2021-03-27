@@ -43,7 +43,7 @@ public class JavaAutonomous extends Robot {
     private int launchCounter = 0;
 
     private final static int POWERSHOT_TIMER = 1500;
-    SingleShotTimerTask timerTask;
+    private final static int DEADRECKON_DELAY = 2500;
 
     DeadReckonPath path = new DeadReckonPath();
 
@@ -59,9 +59,9 @@ public class JavaAutonomous extends Robot {
         }
     }
 
-    public void startPowerShotTimer()
+    public void shootPowerShot()
     {
-        timerTask = new SingleShotTimerTask(this, POWERSHOT_TIMER){
+        SingleShotTimerTask timerTask = new SingleShotTimerTask(this, POWERSHOT_TIMER){
             @Override
             public void handleEvent(RobotEvent e){
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
@@ -72,10 +72,7 @@ public class JavaAutonomous extends Robot {
                 }
             }
         };
-    }
-    public void shootPowerShot()
-    {
-        addTask(timerTask);
+        this.addTask(timerTask);
         //might need to reorder or rearrange actions in this method based on testing
         RobotLog.i("hits the power shot");
         openRingDispenser();
@@ -111,17 +108,62 @@ public class JavaAutonomous extends Robot {
         });
     }
 
-    public void goToPowerShotLocation(DeadReckonPath powerShotPath)
+    public void goToPowerShotLocation1()
     {
         RobotLog.i("drives to PowerShot Location");
 
-        this.addTask(new DeadReckonTask(this, powerShotPath, drivetrain1){
+        this.addTask(new DeadReckonTask(this, powerShotPath1, drivetrain1){
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("reached PowerShot Location");
+                    shootPowerShot();
+                    /*
+                     * Put in delay.
+                     */
+                    this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
+                        @Override
+                        public void handleEvent(RobotEvent e) {
+                            goToPowerShotLocation2();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void goToPowerShotLocation2()
+    {
+        this.addTask(new DeadReckonTask(this, powerShotPath2, drivetrain1){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("reached PowerShot Location");
+                    shootPowerShot();
+                    /*
+                     * Put in delay.
+                     */
+                    goToPowerShotLocation3();
+                }
+            }
+        });
+    }
+
+    public void goToPowerShotLocation3()
+    {
+        this.addTask(new DeadReckonTask(this, powerShotPath3, drivetrain1){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("reached PowerShot Location");
+                    shootPowerShot();
+                    /*
+                     * Put in delay.
+                     */
+                    parkOnLaunchLine();
                 }
             }
         });
@@ -208,12 +250,6 @@ public class JavaAutonomous extends Robot {
     public void start()
     {
         loggingTlm = telemetry.addData("log", "unknown");
-        goToPowerShotLocation(powerShotPath1);
-        shootPowerShot();
-        goToPowerShotLocation(powerShotPath2);
-        shootPowerShot();
-        goToPowerShotLocation(powerShotPath3);
-        shootPowerShot();
-        parkOnLaunchLine();
+        goToPowerShotLocation1();
     }
 }
