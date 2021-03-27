@@ -145,7 +145,12 @@ public class JavaAutonomous extends Robot {
                     /*
                      * Put in delay.
                      */
-                    goToPowerShotLocation3();
+                    this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
+                        @Override
+                        public void handleEvent(RobotEvent e) {
+                            goToPowerShotLocation3();
+                        }
+                    });
                 }
             }
         });
@@ -163,7 +168,12 @@ public class JavaAutonomous extends Robot {
                     /*
                      * Put in delay.
                      */
-                    parkOnLaunchLine();
+                    this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
+                        @Override
+                        public void handleEvent(RobotEvent e) {
+                            parkOnLaunchLine();
+                        }
+                    });
                 }
             }
         });
@@ -227,7 +237,8 @@ public class JavaAutonomous extends Robot {
         initPath();
 
         //initialize powershot timer
-        startPowerShotTimer();
+        // but this method was taken out, just in case it is here
+        //startPowerShotTimer();
     }
 
 
@@ -251,5 +262,6 @@ public class JavaAutonomous extends Robot {
     {
         loggingTlm = telemetry.addData("log", "unknown");
         goToPowerShotLocation1();
+        //only need to say this because it will lead into the next methods
     }
 }
