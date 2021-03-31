@@ -51,6 +51,7 @@ import team25core.RunToEncoderValueTask;
 import team25core.SingleShotTimerTask;
 import team25core.StandardFourMotorRobot;
 import team25core.TankMechanumControlScheme;
+import team25core.TankMechanumControlSchemeFixLeft;
 import team25core.TankMechanumControlSchemeReverse;
 import team25core.TeleopDriveTask;
 
@@ -131,7 +132,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
     public void start() {
 
         //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
-        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
+        //TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
+        TankMechanumControlSchemeFixLeft scheme = new TankMechanumControlSchemeFixLeft(gamepad1, TankMechanumControlSchemeFixLeft.MotorDirection.NONCANONICAL);
 
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
 
