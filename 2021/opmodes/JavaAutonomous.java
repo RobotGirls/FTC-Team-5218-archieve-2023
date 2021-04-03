@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.GamepadTask;
-import team25core.MechanumGearedDrivetrainFixLeft;
+import team25core.MechanumGearedDrivetrain;
 import team25core.RobotEvent;
 import team25core.Robot;
 import team25core.SingleShotTimerTask;
@@ -21,7 +21,7 @@ import team25core.SingleShotTimerTask;
 public class JavaAutonomous extends Robot {
 //The name is JavaBotsScrimmage3 for autonomous opmodes on the phone
 
-    private MechanumGearedDrivetrainFixLeft drivetrain1;
+    private MechanumGearedDrivetrain drivetrain1;
     private Telemetry.Item loggingTlm;
     private DeadReckonPath launchLinePath;
     private final double STRAIGHT_SPEED = 0.5;
@@ -224,7 +224,7 @@ public class JavaAutonomous extends Robot {
         loggingTlm = telemetry.addData("distance traveled", "unknown");
 
         //initializing drivetrain
-        drivetrain1 = new MechanumGearedDrivetrainFixLeft(frontRight, backRight, frontLeft, backLeft);
+        drivetrain1 = new MechanumGearedDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain1.resetEncoders();
         drivetrain1.encodersOn();
         RobotLog.i("start moving");
