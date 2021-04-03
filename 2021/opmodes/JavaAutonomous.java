@@ -35,7 +35,7 @@ public class JavaAutonomous extends Robot {
     private DcMotor backRight;
 
     private DcMotor launchMechRight;
-    private DcMotor launchMechLeft;
+   // private DcMotor launchMechLeft;
     private Servo dispenserMech;
     private boolean dispenserMechIsOpen = false;
     private final double OPEN_SERVO = (float) 256.0/256.0;
@@ -67,7 +67,7 @@ public class JavaAutonomous extends Robot {
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
                 if (event.kind == EventKind.EXPIRED) {
                     launchMechRight.setPower(0);
-                    launchMechLeft.setPower(0);
+                    //launchMechLeft.setPower(0);
                     closeRingDispenser();
                 }
             }
@@ -77,7 +77,7 @@ public class JavaAutonomous extends Robot {
         RobotLog.i("hits the power shot");
         openRingDispenser();
         launchMechRight.setPower(1.0);
-        launchMechLeft.setPower(-1.0);
+        //launchMechLeft.setPower(-1.0);
     }
 
     public void openRingDispenser()
@@ -108,7 +108,7 @@ public class JavaAutonomous extends Robot {
         });
     }
 
-    public void goToPowerShotLocation1()
+   /* public void goToPowerShotLocation1()
     {
         RobotLog.i("drives to PowerShot Location");
 
@@ -119,9 +119,9 @@ public class JavaAutonomous extends Robot {
                 if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("reached PowerShot Location");
                     shootPowerShot();
-                    /*
-                     * Put in delay.
-                     */
+
+                     Put in delay.
+
                     this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
                         @Override
                         public void handleEvent(RobotEvent e) {
@@ -142,9 +142,9 @@ public class JavaAutonomous extends Robot {
                 if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("reached PowerShot Location");
                     shootPowerShot();
-                    /*
-                     * Put in delay.
-                     */
+
+                     Put in delay.
+
                     this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
                         @Override
                         public void handleEvent(RobotEvent e) {
@@ -165,9 +165,9 @@ public class JavaAutonomous extends Robot {
                 if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("reached PowerShot Location");
                     shootPowerShot();
-                    /*
-                     * Put in delay.
-                     */
+
+                     Put in delay.
+
                     this.robot.addTask(new SingleShotTimerTask(this.robot, DEADRECKON_DELAY) {
                         @Override
                         public void handleEvent(RobotEvent e) {
@@ -177,7 +177,7 @@ public class JavaAutonomous extends Robot {
                 }
             }
         });
-    }
+    }*/
 
     public void loop()
     {
@@ -190,18 +190,18 @@ public class JavaAutonomous extends Robot {
         launchLinePath = new DeadReckonPath();
         launchLinePath.stop();
         launchLinePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 70, -STRAIGHT_SPEED);
-        powerShotPath1 = new DeadReckonPath();
-        powerShotPath1.stop();
-        powerShotPath1.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
-        powerShotPath1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
-        powerShotPath2 = new DeadReckonPath();
-        powerShotPath2.stop();
-        powerShotPath2.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
-        powerShotPath2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
-        powerShotPath3 = new DeadReckonPath();
-        powerShotPath3.stop();
-        powerShotPath3.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
-        powerShotPath3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
+        //powerShotPath1 = new DeadReckonPath();
+        //powerShotPath1.stop();
+        //powerShotPath1.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
+        //powerShotPath1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
+        //powerShotPath2 = new DeadReckonPath();
+        //powerShotPath2.stop();
+        //powerShotPath2.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
+        //powerShotPath2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
+        //powerShotPath3 = new DeadReckonPath();
+        //powerShotPath3.stop();
+        //powerShotPath3.addSegment(DeadReckonPath.SegmentType.TURN, 15, -STRAIGHT_SPEED);
+        //powerShotPath3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, -STRAIGHT_SPEED);
     }
 
 
@@ -214,11 +214,11 @@ public class JavaAutonomous extends Robot {
         backRight = hardwareMap.get(DcMotor.class,"backRight");
 
         launchMechRight = hardwareMap.get(DcMotor.class,"launchMechRight");
-        launchMechLeft = hardwareMap.get(DcMotor.class,"launchMechLeft");
+        //launchMechLeft = hardwareMap.get(DcMotor.class,"launchMechLeft");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
 
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //caption: what appears on the phone
         loggingTlm = telemetry.addData("distance traveled", "unknown");
@@ -261,7 +261,8 @@ public class JavaAutonomous extends Robot {
     public void start()
     {
         loggingTlm = telemetry.addData("log", "unknown");
-        goToPowerShotLocation1();
+        parkOnLaunchLine();
         //only need to say this because it will lead into the next methods
+        //now it is back to normal!
     }
 }

@@ -64,9 +64,9 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
     private DcMotor launchMechRight;
-    private DcMotor launchMechLeft;
+    //private DcMotor launchMechLeft;
     private boolean launchMechOn = false;
-    private DcMotor intakeMech;
+    //private DcMotor intakeMech;
     //private DcMotor conveyorMech;
     private Servo dispenserMech;
     private boolean dispenserMechIsOpen = false;
@@ -96,10 +96,10 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //mapping the launch mech and intake mech
         launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
-        intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
+        //intakeMech = hardwareMap.get(DcMotor.class, "intakeMech");
         //conveyorMech = hardwareMap.get(DcMotor.class, "conveyorMech");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
-        launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
+        //launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
 
         //**CONTINUE FROM HERE**
 
@@ -109,7 +109,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -148,21 +148,21 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         // enable and disable the launch mech
                         if (launchMechOn) {
                             launchMechRight.setPower(0);
-                            launchMechLeft.setPower(0);
+                            //launchMechLeft.setPower(0);
                             launchMechOn = false;
                         } else {
                             launchMechRight.setPower(1);
-                            launchMechLeft.setPower(-1);
+                            //launchMechLeft.setPower(-1);
                             launchMechOn = true;
                         }
                         break;
                     case BUTTON_A_DOWN:
                         // enable the intake mech
-                        intakeMech.setPower(-1);
+                        //intakeMech.setPower(-1);
                         break;
                     case BUTTON_A_UP:
                         // stop the intake mech
-                        intakeMech.setPower(0);
+                        //intakeMech.setPower(0);
                         break;
                     //case BUTTON_X_DOWN:
                         // enable the conveyor mech
