@@ -35,7 +35,7 @@ public class JavaAutonomous extends Robot {
     private DcMotor backRight;
 
     private DcMotor launchMechRight;
-    private DcMotor launchMechLeft;
+    //private DcMotor launchMechLeft;
     private Servo dispenserMech;
     private boolean dispenserMechIsOpen = false;
     private final double OPEN_SERVO = (float) 256.0/256.0;
@@ -67,7 +67,7 @@ public class JavaAutonomous extends Robot {
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
                 if (event.kind == EventKind.EXPIRED) {
                     launchMechRight.setPower(0);
-                    launchMechLeft.setPower(0);
+                    //launchMechLeft.setPower(0);
                     closeRingDispenser();
                 }
             }
@@ -77,7 +77,7 @@ public class JavaAutonomous extends Robot {
         RobotLog.i("hits the power shot");
         openRingDispenser();
         launchMechRight.setPower(1.0);
-        launchMechLeft.setPower(-1.0);
+        //launchMechLeft.setPower(-1.0);
     }
 
     public void openRingDispenser()
@@ -214,11 +214,11 @@ public class JavaAutonomous extends Robot {
         backRight = hardwareMap.get(DcMotor.class,"backRight");
 
         launchMechRight = hardwareMap.get(DcMotor.class,"launchMechRight");
-        launchMechLeft = hardwareMap.get(DcMotor.class,"launchMechLeft");
+        //launchMechLeft = hardwareMap.get(DcMotor.class,"launchMechLeft");
         dispenserMech = hardwareMap.servo.get("dispenserMech");
 
         launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //caption: what appears on the phone
         loggingTlm = telemetry.addData("distance traveled", "unknown");
