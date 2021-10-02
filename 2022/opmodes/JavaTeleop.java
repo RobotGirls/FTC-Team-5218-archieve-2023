@@ -31,7 +31,7 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package test;
+package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -63,8 +63,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
-    private DcMotor launchMechRight;
-    private DcMotor launchMechLeft;
+    private DcMotor carouselMech;
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -86,19 +85,15 @@ public class JavaTeleop extends StandardFourMotorRobot {
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
-        //mapping the launch mech and intake mech
-        launchMechRight = hardwareMap.get(DcMotor.class, "launchMechRight");
-        launchMechLeft = hardwareMap.get(DcMotor.class, "launchMechLeft");
-
-        //**CONTINUE FROM HERE**
+        //mechanisms
+        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
 
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMechLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -118,27 +113,34 @@ public class JavaTeleop extends StandardFourMotorRobot {
     @Override
     public void start() {
 
-        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+        //Gamepad 1
+        // TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
         this.addTask(drivetask);
 
-        //gamepad 1
-        this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_1) {
+
+        //Gamepad 2
+        this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
             //@Override
             public void handleEvent(RobotEvent e) {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
 
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
-                        // enable the launch mech
-                        launchMechRight.setPower(1);
-                        launchMechLeft.setPower(-1);
+                        //enable carouselMech
+                        carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
+                        carouselMech.setPower(1);
                         break;
                     case BUTTON_X_UP:
-                        // stop the launch mech
-                        launchMechRight.setPower(0);
-                        launchMechLeft.setPower(0);
+                    case BUTTON_Y_UP:
+                        //disable carouselMech
+                        carouselMech.setPower(0);
+                        break;
+                    case BUTTON_Y_DOWN:
+                        //enable carouselMech
+                        carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
+                        carouselMech.setPower(1);
                         break;
                 }
             }
