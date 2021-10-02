@@ -34,20 +34,26 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-//import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import team25core.DeadReckonPath;
-import team25core.Robot;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.Robot;
 import team25core.RobotEvent;
+import team25core.SingleShotTimerTask;
 
 
 @Autonomous(name = "JavaLM0AutoRed")
 //@Disabled
 public class JavaLM0AutoRed extends Robot {
+
+    private final static int CAROUSEL_TIMER = 4000;
+    private Telemetry.Item loggingTlm;
+    private Telemetry.Item objectSeenTlm;
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -56,6 +62,10 @@ public class JavaLM0AutoRed extends Robot {
 
     private FourWheelDirectDrivetrain drivetrain;
 
+    private Telemetry.Item timerTlm;
+    private Telemetry.Item handleEventTlm;
+
+    SingleShotTimerTask carouselTimerTask;
     /*
      * The default event handler for the robot.
      */
@@ -70,6 +80,37 @@ public class JavaLM0AutoRed extends Robot {
         }
     }
 
+    public void startCarouselTimer() {
+        carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
+            //the handleEvent method is called when timer expires
+            @Override
+            public void handleEvent(RobotEvent e) {
+                SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
+
+                if (event.kind == EventKind.EXPIRED) {
+                    carouselTimerTask.stop();
+                    timerTlm.setValue("waited 4 seconds");
+                }
+            }
+        };
+    }
+
+    public void parkInStorageUnit()
+    {
+        DeadReckonPath firstPath = new DeadReckonPath();
+        DeadReckonPath secondPath = new DeadReckonPath();
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
+        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
+
+        /*
+         * Alternatively, this could be an anonymous class declaration that implements
+         * handleEvent() for task specific event handlers.
+         */
+        this.addTask(new DeadReckonTask(this, firstPath, drivetrain));
+        startCarouselTimer();
+        this.addTask(new DeadReckonTask(this, secondPath, drivetrain));
+    }
     @Override
     public void init()
     {
@@ -84,18 +125,6 @@ public class JavaLM0AutoRed extends Robot {
     @Override
     public void start()
     {
-        DeadReckonPath path = new DeadReckonPath();
-
-        path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, 0.5);
-        path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
-        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-
-
-
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-        this.addTask(new DeadReckonTask(this, path, drivetrain));
+        parkInStorageUnit();
     }
 }
