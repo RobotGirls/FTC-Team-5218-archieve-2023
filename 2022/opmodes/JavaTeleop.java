@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -59,11 +60,14 @@ import team25core.TeleopDriveTask;
 public class JavaTeleop extends StandardFourMotorRobot {
 
 
-    private Telemetry.Item linearPos;
+    private Telemetry.Item buttonTlm;
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
     private DcMotor carouselMech;
+    private DcMotor liftMotorL;
+    private DcMotor liftMotorR;
+    private Gamepad blah;
 
     //private FourWheelDirectDrivetrain drivetrain;
     //private MechanumGearedDrivetrain drivetrain;
@@ -87,6 +91,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //mechanisms
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
+        liftMotorL = hardwareMap.get(DcMotor.class,"liftMotorL");
+        liftMotorR = hardwareMap.get(DcMotor.class, "liftMotorR");
 
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -94,6 +100,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //telemetry
+        buttonTlm = telemetry.addData("buttonState", "unknown");
 
        /* launch = new OneWheelDirectDrivetrain(launchMech);
         launch.resetEncoders();
@@ -141,6 +152,24 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
                         carouselMech.setPower(1);
+                        break;
+                    case LEFT_STICK_UP:
+                        buttonTlm.setValue("Left Stick Up");
+                        liftMotorL.setPower(0.1);
+                        liftMotorR.setPower(0.1);
+                        break;
+                    case LEFT_STICK_DOWN:
+                        buttonTlm.setValue("Left Stick Down");
+                        liftMotorL.setPower(-0.1);
+                        liftMotorR.setPower(-0.1);
+                        break;
+                    case LEFT_STICK_NEUTRAL:
+                        buttonTlm.setValue("Not Moving");
+                        liftMotorL.setPower(0);
+                        liftMotorR.setPower(0);
+                        break;
+                    default:
+                        buttonTlm.setValue("Not Moving");
                         break;
                 }
             }
