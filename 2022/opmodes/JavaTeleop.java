@@ -125,8 +125,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
     public void start() {
 
         //Gamepad 1
-        // TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
-        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
+        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+        //TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
         this.addTask(drivetask);
 

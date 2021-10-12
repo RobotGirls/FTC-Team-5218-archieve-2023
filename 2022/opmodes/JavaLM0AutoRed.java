@@ -120,6 +120,7 @@ public class JavaLM0AutoRed extends Robot {
         rearRight = hardwareMap.get(DcMotor.class, "rearRight");
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
+        drivetrain.setNoncanonicalMotorDirection();
     }
 
     @Override
