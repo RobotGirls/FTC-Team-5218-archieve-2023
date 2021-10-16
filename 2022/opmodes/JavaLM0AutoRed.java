@@ -42,6 +42,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.MechanumGearedDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
@@ -60,12 +61,14 @@ public class JavaLM0AutoRed extends Robot {
     private DcMotor rearLeft;
     private DcMotor rearRight;
 
-    private FourWheelDirectDrivetrain drivetrain;
+    private MechanumGearedDrivetrain drivetrain;
 
     private Telemetry.Item timerTlm;
     private Telemetry.Item handleEventTlm;
 
     SingleShotTimerTask carouselTimerTask;
+    DeadReckonPath firstPath;
+    DeadReckonPath secondPath;
     /*
      * The default event handler for the robot.
      */
@@ -94,22 +97,39 @@ public class JavaLM0AutoRed extends Robot {
             }
         };
     }
+    public void initPaths()
+    {
+        firstPath = new DeadReckonPath();
+        secondPath = new DeadReckonPath();
+
+        firstPath.stop();
+        secondPath.stop();
+
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
+        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
+    }
 
     public void parkInStorageUnit()
     {
-        DeadReckonPath firstPath = new DeadReckonPath();
-        DeadReckonPath secondPath = new DeadReckonPath();
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
-        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-
         /*
          * Alternatively, this could be an anonymous class declaration that implements
          * handleEvent() for task specific event handlers.
          */
-        this.addTask(new DeadReckonTask(this, firstPath, drivetrain));
-        startCarouselTimer();
-        this.addTask(new DeadReckonTask(this, secondPath, drivetrain));
+
+        this.addTask(new DeadReckonTask(this, firstPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went forward to carousel");
+                }
+            }
+        });
+
+        //startCarouselTimer();
+        //this.addTask(new DeadReckonTask(this, secondPath, drivetrain));
     }
     @Override
     public void init()
@@ -119,13 +139,19 @@ public class JavaLM0AutoRed extends Robot {
         rearLeft = hardwareMap.get(DcMotor.class, "rearLeft");
         rearRight = hardwareMap.get(DcMotor.class, "rearRight");
 
-        drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
-        drivetrain.setNoncanonicalMotorDirection();
+        //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
+        //drivetrain.setNoncanonicalMotorDirection();
+        drivetrain = new MechanumGearedDrivetrain(frontRight,rearRight,frontLeft, rearLeft);
+        drivetrain.resetEncoders();
+        drivetrain.encodersOn();
+
+        initPaths();
     }
 
     @Override
     public void start()
     {
+
         parkInStorageUnit();
     }
 }
