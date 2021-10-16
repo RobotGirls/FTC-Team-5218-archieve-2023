@@ -45,6 +45,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.DeadmanMotorTask;
 import team25core.GamepadTask;
+import team25core.MechanumGearedDrivetrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
@@ -64,13 +65,13 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
-    private DcMotor carouselMech;
-    private DcMotor liftMotorL;
-    private DcMotor liftMotorR;
-    private Gamepad blah;
+//    private DcMotor carouselMech;
+//    private DcMotor liftMotorL;
+//    private DcMotor liftMotorR;
+//    private Gamepad blah;
 
     //private FourWheelDirectDrivetrain drivetrain;
-    //private MechanumGearedDrivetrain drivetrain;
+    private MechanumGearedDrivetrain drivetrain;
 
     private static final int TICKS_PER_INCH = 79;
 
@@ -84,24 +85,25 @@ public class JavaTeleop extends StandardFourMotorRobot {
         super.init();
 
         //mapping the wheels
-        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+//        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+//        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+//        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+//        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
         //mechanisms
-        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
-        liftMotorL = hardwareMap.get(DcMotor.class,"liftMotorL");
-        liftMotorR = hardwareMap.get(DcMotor.class, "liftMotorR");
+//        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
+//        liftMotorL = hardwareMap.get(DcMotor.class,"liftMotorL");
+//        liftMotorR = hardwareMap.get(DcMotor.class, "liftMotorR");
 
         // using encoders to record ticks
+
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        liftMotorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        liftMotorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        liftMotorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        liftMotorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
@@ -119,15 +121,20 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         //code for forward mechanum drivetrain:
         //drivetrain = new MechanumGearedDrivetrain(360, frontRight, rearRight, frontLeft, rearLeft);
+        drivetrain = new MechanumGearedDrivetrain(motorMap);
+        drivetrain.setNoncanonicalMotorDirection();
+        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
+        // Note we are swapping the rights and lefts in the arguments below
+        // since the gamesticks were switched for some reason and we need to do
+        // more investigation
+        drivetask = new TeleopDriveTask(this, scheme, frontRight, frontLeft, backRight, backLeft);
     }
 
     @Override
     public void start() {
 
         //Gamepad 1
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
-        //TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
-        drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
+        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         this.addTask(drivetask);
 
 
@@ -137,41 +144,41 @@ public class JavaTeleop extends StandardFourMotorRobot {
             public void handleEvent(RobotEvent e) {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
 
-                switch (gamepadEvent.kind) {
-                    case BUTTON_X_DOWN:
-                        //enable carouselMech
-                        carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
-                        carouselMech.setPower(1);
-                        break;
-                    case BUTTON_X_UP:
-                    case BUTTON_Y_UP:
-                        //disable carouselMech
-                        carouselMech.setPower(0);
-                        break;
-                    case BUTTON_Y_DOWN:
-                        //enable carouselMech
-                        carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
-                        carouselMech.setPower(1);
-                        break;
-                    case LEFT_STICK_UP:
-                        buttonTlm.setValue("Left Stick Up");
-                        liftMotorL.setPower(0.1);
-                        liftMotorR.setPower(0.1);
-                        break;
-                    case LEFT_STICK_DOWN:
-                        buttonTlm.setValue("Left Stick Down");
-                        liftMotorL.setPower(-0.1);
-                        liftMotorR.setPower(-0.1);
-                        break;
-                    case LEFT_STICK_NEUTRAL:
-                        buttonTlm.setValue("Not Moving");
-                        liftMotorL.setPower(0);
-                        liftMotorR.setPower(0);
-                        break;
-                    default:
-                        buttonTlm.setValue("Not Moving");
-                        break;
-                }
+//                switch (gamepadEvent.kind) {
+//                    case BUTTON_X_DOWN:
+//                        //enable carouselMech
+//                        carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
+//                        carouselMech.setPower(1);
+//                        break;
+//                    case BUTTON_X_UP:
+//                    case BUTTON_Y_UP:
+//                        //disable carouselMech
+//                        carouselMech.setPower(0);
+//                        break;
+//                    case BUTTON_Y_DOWN:
+//                        //enable carouselMech
+//                        carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
+//                        carouselMech.setPower(1);
+//                        break;
+//                    case LEFT_STICK_UP:
+//                        buttonTlm.setValue("Left Stick Up");
+//                        liftMotorL.setPower(0.1);
+//                        liftMotorR.setPower(0.1);
+//                        break;
+//                    case LEFT_STICK_DOWN:
+//                        buttonTlm.setValue("Left Stick Down");
+//                        liftMotorL.setPower(-0.1);
+//                        liftMotorR.setPower(-0.1);
+//                        break;
+//                    case LEFT_STICK_NEUTRAL:
+//                        buttonTlm.setValue("Not Moving");
+//                        liftMotorL.setPower(0);
+//                        liftMotorR.setPower(0);
+//                        break;
+//                    default:
+//                        buttonTlm.setValue("Not Moving");
+//                        break;
+//                }
             }
         });
     }
