@@ -31,7 +31,7 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package examples;
+package test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -39,23 +39,22 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import team25core.DeadReckonPath;
-import team25core.Robot;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.MechanumGearedDrivetrain;
+import team25core.Robot;
 import team25core.RobotEvent;
-import team25core.TankDriveTask;
-import team25core.TwoWheelDirectDrivetrain;
 
-@Autonomous(name = "DeadReckonExample")
-@Disabled
-public class DeadReckonExample extends Robot {
+@Autonomous(name = "EncodersTest")
+
+public class EncodersTest extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
-    private DcMotor rearLeft;
-    private DcMotor rearRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
 
-    private FourWheelDirectDrivetrain drivetrain;
+    private MechanumGearedDrivetrain drivetrain;
 
     /**
      * The default event handler for the robot.
@@ -74,27 +73,27 @@ public class DeadReckonExample extends Robot {
     @Override
     public void init()
     {
-        frontLeft = hardwareMap.get(DcMotor.class, "rearLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "rearRight");
-        rearLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        rearRight = hardwareMap.get(DcMotor.class, "frontRight");
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
 
-        drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearRight);
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        drivetrain = new MechanumGearedDrivetrain( backLeft, frontLeft, backRight, frontRight);
     }
 
     @Override
     public void start()
     {
         DeadReckonPath path = new DeadReckonPath();
+        path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, 0.5);
+        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -1.0);
+        //path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 1.0);
 
-        path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.TURN, 90, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.TURN, 90, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.TURN, 90, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-        path.addSegment(DeadReckonPath.SegmentType.TURN, 90, 1.0);
 
         /**
          * Alternatively, this could be an anonymous class declaration that implements

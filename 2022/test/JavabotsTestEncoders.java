@@ -31,7 +31,7 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package opmodes;
+package test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -41,38 +41,24 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
-import team25core.FourWheelDirectDrivetrain;
 import team25core.MechanumGearedDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "JavaLM0AutoRed")
+@Autonomous(name = "JavabotsTestEncoders")
 //@Disabled
-public class JavaLM0AutoRed extends Robot {
+public class JavabotsTestEncoders extends Robot {
 
-    private final static int CAROUSEL_TIMER = 4000;
-    private Telemetry.Item loggingTlm;
-    private Telemetry.Item objectSeenTlm;
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
 
-    private DcMotor carouselMech;
-    private DcMotor liftMotor;
-    private DcMotor intakeMotor;
-
     private MechanumGearedDrivetrain drivetrain;
 
-    private Telemetry.Item timerTlm;
-    private Telemetry.Item handleEventTlm;
-
-    SingleShotTimerTask carouselTimerTask;
-    DeadReckonPath firstPath;
-    DeadReckonPath secondPath;
     /*
      * The default event handler for the robot.
      */
@@ -87,70 +73,6 @@ public class JavaLM0AutoRed extends Robot {
         }
     }
 
-    public void startCarouselTimer() {
-        carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
-            //the handleEvent method is called when timer expires
-            @Override
-            public void handleEvent(RobotEvent e) {
-                SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-
-                if (event.kind == EventKind.EXPIRED) {
-                    carouselTimerTask.stop();
-                    timerTlm.setValue("waited 4 seconds");
-                }
-            }
-        };
-    }
-    public void initPaths()
-    {
-        firstPath = new DeadReckonPath();
-        secondPath = new DeadReckonPath();
-
-        firstPath.stop();
-        secondPath.stop();
-
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
-        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
-    }
-
-    public void goToCarousel()
-    {
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
-        this.addTask(new DeadReckonTask(this, firstPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("went forward to carousel");
-                    startCarouselTimer();
-                }
-            }
-        });
-    }
-    public void parkInStorageUnit()
-    {
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
-        this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("parked in storage unit");
-                }
-            }
-        });
-    }
     @Override
     public void init()
     {
@@ -159,26 +81,22 @@ public class JavaLM0AutoRed extends Robot {
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
 
-        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
-        liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
-        //drivetrain.setNoncanonicalMotorDirection();
         drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
-
-        initPaths();
     }
 
     @Override
     public void start()
     {
-        goToCarousel();
-    }
+        DeadReckonPath path = new DeadReckonPath();
+
+        path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.1);
+
+        this.addTask(new DeadReckonTask(this, path, drivetrain));    }
 }
