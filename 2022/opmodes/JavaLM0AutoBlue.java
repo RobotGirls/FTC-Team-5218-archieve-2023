@@ -60,6 +60,10 @@ public class JavaLM0AutoBlue extends Robot {
     private DcMotor backLeft;
     private DcMotor backRight;
 
+    private DcMotor carouselMech;
+    private DcMotor liftMotor;
+    private DcMotor intakeMotor;
+
     private MechanumGearedDrivetrain drivetrain;
 
     private Telemetry.Item timerTlm;
@@ -153,6 +157,14 @@ public class JavaLM0AutoBlue extends Robot {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
+        liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+
+        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
         //drivetrain.setNoncanonicalMotorDirection();
