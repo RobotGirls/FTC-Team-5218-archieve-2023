@@ -110,7 +110,7 @@ public class JavaLM0AutoRed extends Robot {
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
-    public void parkInStorageUnit()
+    public void goToCarousel()
     {
         /*
          * Alternatively, this could be an anonymous class declaration that implements
@@ -124,12 +124,28 @@ public class JavaLM0AutoRed extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("went forward to carousel");
+                    startCarouselTimer();
                 }
             }
         });
+    }
+    public void parkInStorageUnit()
+    {
+        /*
+         * Alternatively, this could be an anonymous class declaration that implements
+         * handleEvent() for task specific event handlers.
+         */
 
-        //startCarouselTimer();
-        //this.addTask(new DeadReckonTask(this, secondPath, drivetrain));
+        this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("parked in storage unit");
+                }
+            }
+        });
     }
     @Override
     public void init()
@@ -151,7 +167,6 @@ public class JavaLM0AutoRed extends Robot {
     @Override
     public void start()
     {
-
-        parkInStorageUnit();
+        goToCarousel();
     }
 }
