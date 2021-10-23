@@ -57,8 +57,8 @@ public class JavaLM0AutoBlue extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
-    private DcMotor rearLeft;
-    private DcMotor rearRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
 
     private MechanumGearedDrivetrain drivetrain;
 
@@ -151,12 +151,12 @@ public class JavaLM0AutoBlue extends Robot {
     {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        rearLeft = hardwareMap.get(DcMotor.class, "rearLeft");
-        rearRight = hardwareMap.get(DcMotor.class, "rearRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
 
         //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
         //drivetrain.setNoncanonicalMotorDirection();
-        drivetrain = new MechanumGearedDrivetrain(frontRight,rearRight,frontLeft, rearLeft);
+        drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
