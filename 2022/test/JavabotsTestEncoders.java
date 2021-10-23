@@ -30,6 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -47,9 +48,9 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "JavaLM0AutoBlue")
+@Autonomous(name = "JavaLM0AutoRed")
 //@Disabled
-public class JavaLM0AutoBlue extends Robot {
+public class JavaLM0AutoRed extends Robot {
 
     private final static int CAROUSEL_TIMER = 4000;
     private Telemetry.Item loggingTlm;
@@ -109,7 +110,7 @@ public class JavaLM0AutoBlue extends Robot {
         secondPath.stop();
 
         firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
@@ -157,11 +158,6 @@ public class JavaLM0AutoBlue extends Robot {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
-
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");

@@ -159,6 +159,11 @@ public class JavaLM0AutoRed extends Robot {
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
 
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
