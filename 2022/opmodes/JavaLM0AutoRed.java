@@ -41,8 +41,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
-import team25core.FourWheelDirectDrivetrain;
 import team25core.MechanumGearedDrivetrain;
+import team25core.FourWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
@@ -52,8 +52,8 @@ import team25core.SingleShotTimerTask;
 //@Disabled
 public class JavaLM0AutoRed extends Robot {
 
-    private final static int CAROUSEL_TIMER = 4000;
-    private Telemetry.Item loggingTlm;
+    private final static int CAROUSEL_TIMER = 40;
+    //private Telemetry.Item loggingTlm;
     private Telemetry.Item objectSeenTlm;
 
     private DcMotor frontLeft;
@@ -65,7 +65,8 @@ public class JavaLM0AutoRed extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
-    private MechanumGearedDrivetrain drivetrain;
+    //private MechanumGearedDrivetrain drivetrain;
+    private FourWheelDirectDrivetrain drivetrain;
 
     private Telemetry.Item timerTlm;
     private Telemetry.Item handleEventTlm;
@@ -73,6 +74,8 @@ public class JavaLM0AutoRed extends Robot {
     SingleShotTimerTask carouselTimerTask;
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
+
+
     /*
      * The default event handler for the robot.
      */
@@ -88,13 +91,16 @@ public class JavaLM0AutoRed extends Robot {
     }
 
     public void spinCarousel() {
-        carouselMech.setPower(1);
+        carouselMech.setPower(-1);
+        //loggingTlm.setValue("spinCarousel");
     }
     public void stopCarousel() {
         carouselMech.setPower(0);
+        //loggingTlm.setValue("stopCarousel");
     }
 
     public void startCarouselTimer() {
+        //loggingTlm.setValue("startCarouselTimer");
         carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
             //the handleEvent method is called when timer expires
             @Override
@@ -102,7 +108,7 @@ public class JavaLM0AutoRed extends Robot {
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
                 spinCarousel();
                 if (event.kind == EventKind.EXPIRED) {
-                    carouselTimerTask.stop();
+//                    carouselTimerTask.stop();
                     stopCarousel();
                     parkInStorageUnit();
                     timerTlm.setValue("waited 4 seconds");
@@ -118,13 +124,14 @@ public class JavaLM0AutoRed extends Robot {
         firstPath.stop();
         secondPath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, 0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, -0.5);
         secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
     public void goToCarousel()
     {
+        //loggingTlm.setValue("goToCarousel");
         /*
          * Alternatively, this could be an anonymous class declaration that implements
          * handleEvent() for task specific event handlers.
@@ -145,6 +152,7 @@ public class JavaLM0AutoRed extends Robot {
 
     public void parkInStorageUnit()
     {
+        //oggingTlm.setValue("parkInStorageUnit");
         /*
          * Alternatively, this could be an anonymous class declaration that implements
          * handleEvent() for task specific event handlers.
@@ -164,6 +172,8 @@ public class JavaLM0AutoRed extends Robot {
     @Override
     public void init()
     {
+        //loggingTlm.addData("method", "unknown");
+
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
@@ -178,11 +188,12 @@ public class JavaLM0AutoRed extends Robot {
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-        //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         //drivetrain.setNoncanonicalMotorDirection();
-        drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
+        //drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
+
 
         initPaths();
     }

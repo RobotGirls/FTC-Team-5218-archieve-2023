@@ -51,7 +51,7 @@ import team25core.SingleShotTimerTask;
 //@Disabled
 public class JavaLM0AutoBlue extends Robot {
 
-    private final static int CAROUSEL_TIMER = 4000;
+    private final static int CAROUSEL_TIMER = 40;
     private Telemetry.Item loggingTlm;
     private Telemetry.Item objectSeenTlm;
 
@@ -64,7 +64,8 @@ public class JavaLM0AutoBlue extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
-    private MechanumGearedDrivetrain drivetrain;
+    //private MechanumGearedDrivetrain drivetrain;
+    private FourWheelDirectDrivetrain drivetrain;
 
     private Telemetry.Item timerTlm;
     private Telemetry.Item handleEventTlm;
@@ -72,6 +73,7 @@ public class JavaLM0AutoBlue extends Robot {
     SingleShotTimerTask carouselTimerTask;
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
+
     /*
      * The default event handler for the robot.
      */
@@ -87,21 +89,21 @@ public class JavaLM0AutoBlue extends Robot {
     }
 
     public void spinCarousel() {
-        carouselMech.setPower(-1);
+        carouselMech.setPower(1);
     }
     public void stopCarousel() {
         carouselMech.setPower(0);
     }
 
     public void startCarouselTimer() {
+        spinCarousel();
+
         carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
             //the handleEvent method is called when timer expires
             @Override
             public void handleEvent(RobotEvent e) {
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-                spinCarousel();
                 if (event.kind == EventKind.EXPIRED) {
-                    carouselTimerTask.stop();
                     stopCarousel();
                     parkInStorageUnit();
                     timerTlm.setValue("waited 4 seconds");
@@ -117,8 +119,10 @@ public class JavaLM0AutoBlue extends Robot {
         firstPath.stop();
         secondPath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 100, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 2.8, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.5);
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
@@ -135,6 +139,7 @@ public class JavaLM0AutoBlue extends Robot {
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
+
                     RobotLog.i("went forward to carousel");
                     startCarouselTimer();
                 }
@@ -176,9 +181,9 @@ public class JavaLM0AutoBlue extends Robot {
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-        //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         //drivetrain.setNoncanonicalMotorDirection();
-        drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
+        //drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
