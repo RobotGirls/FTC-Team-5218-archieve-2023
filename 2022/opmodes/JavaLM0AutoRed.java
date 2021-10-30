@@ -87,15 +87,24 @@ public class JavaLM0AutoRed extends Robot {
         }
     }
 
+    public void spinCarousel() {
+        carouselMech.setPower(1);
+    }
+    public void stopCarousel() {
+        carouselMech.setPower(0);
+    }
+
     public void startCarouselTimer() {
         carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
             //the handleEvent method is called when timer expires
             @Override
             public void handleEvent(RobotEvent e) {
                 SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-
+                spinCarousel();
                 if (event.kind == EventKind.EXPIRED) {
                     carouselTimerTask.stop();
+                    stopCarousel();
+                    parkInStorageUnit();
                     timerTlm.setValue("waited 4 seconds");
                 }
             }
@@ -133,6 +142,7 @@ public class JavaLM0AutoRed extends Robot {
             }
         });
     }
+
     public void parkInStorageUnit()
     {
         /*
@@ -167,10 +177,6 @@ public class JavaLM0AutoRed extends Robot {
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
-
-        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //drivetrain = new FourWheelDirectDrivetrain(frontRight, rearRight, frontLeft, rearLeft);
         //drivetrain.setNoncanonicalMotorDirection();
