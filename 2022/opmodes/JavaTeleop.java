@@ -91,9 +91,9 @@ public class JavaTeleop extends StandardFourMotorRobot {
 //        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
         //mechanisms
-//        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
-//        liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
-//        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
+        liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         // using encoders to record ticks
 
@@ -143,51 +143,51 @@ public class JavaTeleop extends StandardFourMotorRobot {
             //@Override
             public void handleEvent(RobotEvent e) {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
-//
-//                switch (gamepadEvent.kind) {
-//                    case BUTTON_X_DOWN:
-//                        //enable carouselMech
-//                        carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
-//                        carouselMech.setPower(1);
-//                        break;
-//                    case BUTTON_X_UP:
-//                    case BUTTON_Y_UP:
-//                        //disable carouselMech
-//                        carouselMech.setPower(0);
-//                        break;
-//                    case BUTTON_Y_DOWN:
-//                        //enable carouselMech
-//                        carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
-//                        carouselMech.setPower(1);
-//                        break;
-//                    case LEFT_STICK_UP:
-//                        buttonTlm.setValue("Left Stick Up");
-//                        liftMotor.setPower(0.1);
-//                        break;
-//                    case LEFT_STICK_DOWN:
-//                        buttonTlm.setValue("Left Stick Down");
-//                        liftMotor.setPower(-0.1);
-//                        break;
-//                    case LEFT_STICK_NEUTRAL:
-//                        buttonTlm.setValue("Not Moving");
-//                        liftMotor.setPower(0);
-//                        break;
-//                    case RIGHT_STICK_UP:
-//                        buttonTlm.setValue("Right Stick Up");
-//                        intakeMotor.setPower(0.1);
-//                        break;
-//                    case RIGHT_STICK_DOWN:
-//                        buttonTlm.setValue("Right Stick Down");
-//                        intakeMotor.setPower(-0.1);
-//                        break;
-//                    case RIGHT_STICK_NEUTRAL:
-//                        buttonTlm.setValue("Not Moving");
-//                        intakeMotor.setPower(0);
-//                        break;
-//                    default:
-//                        buttonTlm.setValue("Not Moving");
-//                        break;
-//                }
+
+                switch (gamepadEvent.kind) {
+                    case BUTTON_X_DOWN:
+                        //enable carouselMech
+                        carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
+                        carouselMech.setPower(1);
+                        break;
+                    case BUTTON_X_UP:
+                    case BUTTON_Y_UP:
+                        //disable carouselMech
+                        carouselMech.setPower(0);
+                        break;
+                    case BUTTON_Y_DOWN:
+                        //enable carouselMech
+                        carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
+                        carouselMech.setPower(1);
+                        break;
+                    case LEFT_STICK_UP:
+                        buttonTlm.setValue("Left Stick Up");
+                        liftMotor.setPower(0.1);
+                        break;
+                    case LEFT_STICK_DOWN:
+                        buttonTlm.setValue("Left Stick Down");
+                        liftMotor.setPower(-0.1);
+                        break;
+                    case LEFT_STICK_NEUTRAL:
+                        buttonTlm.setValue("Not Moving");
+                        liftMotor.setPower(0);
+                        break;
+                    case RIGHT_STICK_UP:
+                        buttonTlm.setValue("Right Stick Up");
+                        intakeMotor.setPower(0.1);
+                        break;
+                    case RIGHT_STICK_DOWN:
+                        buttonTlm.setValue("Right Stick Down");
+                        intakeMotor.setPower(-0.1);
+                        break;
+                    case RIGHT_STICK_NEUTRAL:
+                        buttonTlm.setValue("Not Moving");
+                        intakeMotor.setPower(0);
+                        break;
+                    default:
+                        buttonTlm.setValue("Not Moving");
+                        break;
+                    }
             }
         });
     }
