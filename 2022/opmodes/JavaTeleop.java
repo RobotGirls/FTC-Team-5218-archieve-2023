@@ -162,11 +162,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         break;
                     case LEFT_STICK_UP:
                         buttonTlm.setValue("Left Stick Up");
-                        liftMotor.setPower(0.1);
+                        liftMotor.setPower(0.5);
                         break;
                     case LEFT_STICK_DOWN:
                         buttonTlm.setValue("Left Stick Down");
-                        liftMotor.setPower(-0.1);
+                        liftMotor.setPower(-0.5);
                         break;
                     case LEFT_STICK_NEUTRAL:
                         buttonTlm.setValue("Not Moving");
@@ -174,11 +174,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         break;
                     case RIGHT_STICK_UP:
                         buttonTlm.setValue("Right Stick Up");
-                        intakeMotor.setPower(0.1);
+                        intakeMotor.setPower(0.5);
                         break;
                     case RIGHT_STICK_DOWN:
                         buttonTlm.setValue("Right Stick Down");
-                        intakeMotor.setPower(-0.1);
+                        intakeMotor.setPower(-0.5);
                         break;
                     case RIGHT_STICK_NEUTRAL:
                         buttonTlm.setValue("Not Moving");
