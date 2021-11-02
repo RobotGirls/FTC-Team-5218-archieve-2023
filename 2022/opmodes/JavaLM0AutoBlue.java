@@ -42,6 +42,7 @@ import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
 import team25core.MechanumGearedDrivetrain;
+import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
@@ -61,6 +62,7 @@ public class JavaLM0AutoBlue extends Robot {
     private DcMotor backRight;
 
     private DcMotor carouselMech;
+    private OneWheelDirectDrivetrain singleMotorDrivetrain;
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
@@ -73,6 +75,7 @@ public class JavaLM0AutoBlue extends Robot {
     SingleShotTimerTask carouselTimerTask;
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
+    DeadReckonPath carouselPath;
 
     /*
      * The default event handler for the robot.
@@ -88,41 +91,41 @@ public class JavaLM0AutoBlue extends Robot {
         }
     }
 
-    public void spinCarousel() {
-        carouselMech.setPower(1);
-    }
-    public void stopCarousel() {
-        carouselMech.setPower(0);
-    }
+    public void spinCarousel()
+    {
+        //loggingTlm.setValue("goToCarousel");
+        /*
+         * Alternatively, this could be an anonymous class declaration that implements
+         * handleEvent() for task specific event handlers.
+         */
 
-    public void startCarouselTimer() {
-        spinCarousel();
-
-        carouselTimerTask = new SingleShotTimerTask(this, CAROUSEL_TIMER) {
-            //the handleEvent method is called when timer expires
+        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
             @Override
-            public void handleEvent(RobotEvent e) {
-                SingleShotTimerTask.SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-                if (event.kind == EventKind.EXPIRED) {
-                    stopCarousel();
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("spun carousel");
                     parkInStorageUnit();
-                    timerTlm.setValue("waited 4 seconds");
                 }
             }
-        };
+        });
     }
     public void initPaths()
     {
         firstPath = new DeadReckonPath();
         secondPath = new DeadReckonPath();
+        carouselPath = new DeadReckonPath();
 
         firstPath.stop();
         secondPath.stop();
+        carouselPath.stop();
 
         firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 2.8, 0.5);
         secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.5);
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, 0.5);
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
@@ -139,9 +142,8 @@ public class JavaLM0AutoBlue extends Robot {
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-
                     RobotLog.i("went forward to carousel");
-                    startCarouselTimer();
+                    spinCarousel();
                 }
             }
         });
@@ -182,10 +184,12 @@ public class JavaLM0AutoBlue extends Robot {
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
-        //drivetrain.setNoncanonicalMotorDirection();
-        //drivetrain = new MechanumGearedDrivetrain(frontRight,backRight,frontLeft,backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
+
+        singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
+        singleMotorDrivetrain.resetEncoders();
+        singleMotorDrivetrain.encodersOn();
 
         initPaths();
     }
