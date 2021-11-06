@@ -121,7 +121,7 @@ public class JavaLM0AutoBlue extends Robot {
         secondPath.stop();
         carouselPath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.5); // comes off the wall
         firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 2.8, 0.5);
         secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.5);
@@ -182,6 +182,8 @@ public class JavaLM0AutoBlue extends Robot {
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+
+        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
