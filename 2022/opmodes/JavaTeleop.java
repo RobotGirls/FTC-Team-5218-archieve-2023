@@ -158,7 +158,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_Y_DOWN:
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
-                        carouselMech.setPower(1);
+                        carouselMech.setPower(0.2);
                         break;
                     case LEFT_STICK_UP:
                         buttonTlm.setValue("Left Stick Up");
