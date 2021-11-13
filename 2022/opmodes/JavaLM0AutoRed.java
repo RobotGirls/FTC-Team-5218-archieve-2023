@@ -124,11 +124,12 @@ public class JavaLM0AutoRed extends Robot {
         carouselPath.stop();
 
         firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14.5, 0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 9, 0.5);
         secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 8.7, -0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.3, 0.5);
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.2);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2, -0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.5);
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.2);
         //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
