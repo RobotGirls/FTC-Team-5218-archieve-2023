@@ -48,7 +48,7 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "JavaLM1AutoWarehouseRed")
+@Autonomous(name = "JavaLM1AutoWarehouseRed1")
 //@Disabled
 public class JavaLM1AutoWarehouseRed extends Robot {
 
@@ -172,7 +172,7 @@ public class JavaLM1AutoWarehouseRed extends Robot {
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
-        singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
+        singleMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
         singleMotorDrivetrain.resetEncoders();
         singleMotorDrivetrain.encodersOn();
 
