@@ -74,6 +74,7 @@ public class JavaLM1AutoWarehouseRed extends Robot {
 
     SingleShotTimerTask carouselTimerTask;
     DeadReckonPath wareHousePath;
+    DeadReckonPath liftMotorPath;
 
     /*
      * The default event handler for the robot.
@@ -93,10 +94,13 @@ public class JavaLM1AutoWarehouseRed extends Robot {
     public void initPaths()
     {
         wareHousePath = new DeadReckonPath();
+        liftMotorPath = new DeadReckonPath();
 
         wareHousePath.stop();
+        liftMotorPath.stop();
 
         wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, 0.5);
+        liftMotorPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.5 );
 
     }
 
@@ -115,6 +119,27 @@ public class JavaLM1AutoWarehouseRed extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("strafed into WareHouse");
+                }
+            }
+        });
+    }
+
+    public void liftTheMotor()
+    {
+        //loggingTlm.setValue("goToCarousel");
+        /*
+         * Alternatively, this could be an anonymous class declaration that implements
+         * handleEvent() for task specific event handlers.
+         */
+
+        this.addTask(new DeadReckonTask(this, liftMotorPath, singleMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted motor, ready for strafing");
+                    goToWareHouse();
                 }
             }
         });
@@ -141,6 +166,7 @@ public class JavaLM1AutoWarehouseRed extends Robot {
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
@@ -154,8 +180,5 @@ public class JavaLM1AutoWarehouseRed extends Robot {
     }
 
     @Override
-    public void start()
-    {
-        goToWareHouse();
-    }
+    public void start() { liftTheMotor();}
 }
