@@ -62,15 +62,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
 
     private Telemetry.Item buttonTlm;
-    private Telemetry.Item linearEncoderVal;
 
     private TeleopDriveTask drivetask;
     private DcMotor carouselMech;
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
-    private Gamepad blah;
 
-    //private FourWheelDirectDrivetrain drivetrain;
     private MechanumGearedDrivetrain drivetrain;
 
     private static final int TICKS_PER_INCH = 79;
@@ -84,12 +81,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         super.init();
 
-        //mapping the wheels
-//        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-//        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-//        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-//        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
-
         //mechanisms
         carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
@@ -101,29 +92,13 @@ public class JavaTeleop extends StandardFourMotorRobot {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
 
-       /* launch = new OneWheelDirectDrivetrain(launchMech);
-        launch.resetEncoders();
-        launch.encodersOn();
-
-        intake = new OneWheelDirectDrivetrain(intakeMech);
-        intake.resetEncoders();
-        intake.encodersOn();
-
-        */
-
         TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
-        //code for forward mechanum drivetrain:
-        //drivetrain = new MechanumGearedDrivetrain(360, frontRight, rearRight, frontLeft, rearLeft);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
         drivetrain.setCanonicalMotorDirection();
-        //TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1, TankMechanumControlScheme.MotorDirection.NONCANONICAL);
         // Note we are swapping the rights and lefts in the arguments below
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
@@ -134,7 +109,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
     public void start() {
 
         //Gamepad 1
-        //TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         this.addTask(drivetask);
 
 

@@ -52,10 +52,6 @@ import team25core.SingleShotTimerTask;
 //@Disabled
 public class JavaLM0AutoBlue extends Robot {
 
-    private final static int CAROUSEL_TIMER = 40;
-    private Telemetry.Item loggingTlm;
-    private Telemetry.Item objectSeenTlm;
-
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
@@ -66,13 +62,8 @@ public class JavaLM0AutoBlue extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
-    //private MechanumGearedDrivetrain drivetrain;
     private FourWheelDirectDrivetrain drivetrain;
 
-    private Telemetry.Item timerTlm;
-    private Telemetry.Item handleEventTlm;
-
-    SingleShotTimerTask carouselTimerTask;
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
     DeadReckonPath carouselPath;
@@ -93,12 +84,6 @@ public class JavaLM0AutoBlue extends Robot {
 
     public void spinCarousel()
     {
-        //loggingTlm.setValue("goToCarousel");
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
         this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
@@ -127,16 +112,10 @@ public class JavaLM0AutoBlue extends Robot {
         secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.5);
         secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, -0.5);
         carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.2);
-        //path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
     }
 
     public void goToCarousel()
     {
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
         this.addTask(new DeadReckonTask(this, firstPath, drivetrain){
             @Override
             public void handleEvent (RobotEvent e){
@@ -151,11 +130,6 @@ public class JavaLM0AutoBlue extends Robot {
     }
     public void parkInStorageUnit()
     {
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
         this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
             @Override
             public void handleEvent (RobotEvent e){

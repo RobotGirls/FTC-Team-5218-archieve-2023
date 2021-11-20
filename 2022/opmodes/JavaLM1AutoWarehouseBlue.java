@@ -52,10 +52,6 @@ import team25core.SingleShotTimerTask;
 //@Disabled
 public class JavaLM1AutoWarehouseBlue extends Robot {
 
-    private final static int CAROUSEL_TIMER = 40;
-    //private Telemetry.Item loggingTlm;
-    private Telemetry.Item objectSeenTlm;
-
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
@@ -66,13 +62,8 @@ public class JavaLM1AutoWarehouseBlue extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
-    //private MechanumGearedDrivetrain drivetrain;
     private FourWheelDirectDrivetrain drivetrain;
 
-    private Telemetry.Item timerTlm;
-    private Telemetry.Item handleEventTlm;
-
-    SingleShotTimerTask carouselTimerTask;
     DeadReckonPath wareHousePath;
     DeadReckonPath liftMotorPath;
 
@@ -105,12 +96,6 @@ public class JavaLM1AutoWarehouseBlue extends Robot {
 
     public void goToWareHouse()
     {
-        //loggingTlm.setValue("goToCarousel");
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
         this.addTask(new DeadReckonTask(this, wareHousePath, drivetrain){
             @Override
             public void handleEvent (RobotEvent e){
@@ -125,12 +110,6 @@ public class JavaLM1AutoWarehouseBlue extends Robot {
 
     public void liftTheMotor()
     {
-        //loggingTlm.setValue("goToCarousel");
-        /*
-         * Alternatively, this could be an anonymous class declaration that implements
-         * handleEvent() for task specific event handlers.
-         */
-
         this.addTask(new DeadReckonTask(this, liftMotorPath, singleMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
@@ -148,8 +127,6 @@ public class JavaLM1AutoWarehouseBlue extends Robot {
     @Override
     public void init()
     {
-        //loggingTlm.addData("method", "unknown");
-
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
