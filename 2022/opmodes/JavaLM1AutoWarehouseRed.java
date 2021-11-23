@@ -101,8 +101,7 @@ public class JavaLM1AutoWarehouseRed extends Robot {
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("strafed into WareHouse");
                 }
             }
@@ -115,8 +114,7 @@ public class JavaLM1AutoWarehouseRed extends Robot {
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("lifted motor, ready for strafing");
                     goToWareHouse();
                 }

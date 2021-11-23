@@ -89,8 +89,7 @@ public class JavaLM0AutoRed extends Robot {
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("spun carousel");
                     parkInStorageUnit();
                 }
@@ -123,8 +122,7 @@ public class JavaLM0AutoRed extends Robot {
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("went forward to carousel");
                     spinCarousel();
                 }
@@ -138,8 +136,7 @@ public class JavaLM0AutoRed extends Robot {
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("parked in storage unit");
                 }
             }
