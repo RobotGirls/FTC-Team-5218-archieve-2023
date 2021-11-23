@@ -60,13 +60,18 @@ import team25core.TeleopDriveTask;
 //@Disabled
 public class JavaTeleop extends StandardFourMotorRobot {
 
-
     private Telemetry.Item buttonTlm;
 
     private TeleopDriveTask drivetask;
     private DcMotor carouselMech;
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
+
+    private DeadmanMotorTask liftMotorUpTask;
+    private DeadmanMotorTask liftMotorDownTask;
+
+    private DeadmanMotorTask intakeTask;
+    private DeadmanMotorTask outtakeTask;
 
     private MechanumGearedDrivetrain drivetrain;
 
@@ -103,6 +108,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
+
+        liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
+        liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
+        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
+        outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
     }
 
     @Override
@@ -111,8 +121,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //Gamepad 1
         this.addTask(drivetask);
 
-
         //Gamepad 2
+        this.addTask(liftMotorUpTask);
+        this.addTask(liftMotorDownTask);
+        this.addTask(intakeTask);
+        this.addTask(outtakeTask);
+
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
             //@Override
             public void handleEvent(RobotEvent e) {
@@ -133,30 +147,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
                         carouselMech.setPower(0.2);
-                        break;
-                    case LEFT_STICK_UP:
-                        buttonTlm.setValue("Left Stick Up");
-                        liftMotor.setPower(-0.5);
-                        break;
-                    case LEFT_STICK_DOWN:
-                        buttonTlm.setValue("Left Stick Down");
-                        liftMotor.setPower(0.5);
-                        break;
-                    case LEFT_STICK_NEUTRAL:
-                        buttonTlm.setValue("Not Moving");
-                        liftMotor.setPower(0);
-                        break;
-                    case RIGHT_STICK_UP:
-                        buttonTlm.setValue("Right Stick Up");
-                        intakeMotor.setPower(-0.5);
-                        break;
-                    case RIGHT_STICK_DOWN:
-                        buttonTlm.setValue("Right Stick Down");
-                        intakeMotor.setPower(0.5);
-                        break;
-                    case RIGHT_STICK_NEUTRAL:
-                        buttonTlm.setValue("Not Moving");
-                        intakeMotor.setPower(0);
                         break;
                     default:
                         buttonTlm.setValue("Not Moving");
