@@ -37,9 +37,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.ObjectDetectionTask;
+import team25core.ObjectImageInfo;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
@@ -63,6 +67,18 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
 
     private FourWheelDirectDrivetrain drivetrain;
 
+    private Telemetry.Item currentLocationTlm;
+    private Telemetry.Item objectDetectedTlm;
+    private Telemetry.Item imageTlm;
+    private double objectConfidence;
+
+    private double objectLeft;
+    private double objectMidpoint;
+    private double imageWidth;
+
+    ObjectDetectionTask elementDetectionTask;
+    ObjectImageInfo objectImageInfo;
+
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
     DeadReckonPath carouselPath;
@@ -84,6 +100,26 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         if (e instanceof DeadReckonTask.DeadReckonEvent) {
             RobotLog.i("Completed path segment %d", ((DeadReckonTask.DeadReckonEvent)e).segment_num);
         }
+    }
+
+    public void setObjectDetection() {
+
+        elementDetectionTask = new ObjectDetectionTask(this, "WebCam1") {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                ObjectDetectionEvent event = (ObjectDetectionEvent) e;
+                objectLeft = event.objects.get(0).getLeft();
+                objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
+                imageWidth = event.objects.get(0).getImageWidth();
+                if (event.kind == EventKind.OBJECTS_DETECTED){
+                    objectDetectedTlm.setValue("Element Detected");
+                    currentLocationTlm.setValue(objectMidpoint);
+                    imageTlm.setValue(imageWidth);
+                }
+            }
+        };
+        elementDetectionTask.init(telemetry, hardwareMap);
+        elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
     }
 
     public void spinCarousel()
@@ -278,12 +314,22 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
+        objectImageInfo = new ObjectImageInfo();
+        objectImageInfo.displayTelemetry(this.telemetry);
+
+        objectDetectedTlm = telemetry.addData("Object detected","unknown");
+        currentLocationTlm = telemetry.addData("Current location",-1);
+        imageTlm = telemetry.addData("Image Width",-1);
+
         initPaths();
+
+        setObjectDetection();
     }
 
     @Override
     public void start()
     {
-        initialLift();
+        //initialLift();
+        addTask(elementDetectionTask);
     }
 }
