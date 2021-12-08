@@ -49,7 +49,7 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoStorageUnitRed")
+@Autonomous(name = "JavaLM2AutoStorageUnitRed2")
 //@Disabled
 public class JavaLM2AutoStorageUnitRed extends Robot {
 
@@ -112,7 +112,7 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
                 objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
                 imageWidth = event.objects.get(0).getImageWidth();
                 if (event.kind == EventKind.OBJECTS_DETECTED){
-                    objectDetectedTlm.setValue("Element Detected");
+                    objectDetectedTlm.setValue(event.objects.get(0).getLabel());
                     currentLocationTlm.setValue(objectMidpoint);
                     imageTlm.setValue(imageWidth);
                 }
