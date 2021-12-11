@@ -98,6 +98,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
 
