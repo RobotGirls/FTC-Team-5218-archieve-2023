@@ -105,10 +105,10 @@ public class JavaLM0AutoBlue extends Robot {
         secondPath.stop();
         carouselPath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.5); // comes off the wall
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, -0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 20, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.3); // comes off the wall
+        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, -0.3);
+        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 20, 0.3);
+        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.3);
         secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, -0.5);
         carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.2);
     }
