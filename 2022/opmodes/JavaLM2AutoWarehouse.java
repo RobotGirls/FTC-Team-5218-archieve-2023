@@ -49,9 +49,9 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoStorageUnitRed2")
+@Autonomous(name = "JavaLM2AutoStorageUnitBlueTopTier")
 //@Disabled
-public class JavaLM2AutoStorageUnitBlue extends Robot {
+public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -65,28 +65,13 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
+    DeadReckonPath wareHousePath;
+
     private FourWheelDirectDrivetrain drivetrain;
 
-    private Telemetry.Item currentLocationTlm;
-    private Telemetry.Item objectDetectedTlm;
-    private Telemetry.Item imageTlm;
-    private double objectConfidence;
-
-    private double objectLeft;
-    private double objectMidpoint;
-    private double imageWidth;
-
-    ObjectDetectionTask elementDetectionTask;
-    ObjectImageInfo objectImageInfo;
-
-    DeadReckonPath firstPath;
-    DeadReckonPath secondPath;
-    DeadReckonPath carouselPath;
     DeadReckonPath initialLiftPath;
     DeadReckonPath initialPath;
     DeadReckonPath shippingPath;
-    DeadReckonPath firstTierLiftPath;
-    DeadReckonPath secondTierLiftPath;
     DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
 
@@ -104,27 +89,7 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         }
     }
 
-    public void setObjectDetection() {
-
-        elementDetectionTask = new ObjectDetectionTask(this, "WebCam1") {
-            @Override
-            public void handleEvent(RobotEvent e) {
-                ObjectDetectionEvent event = (ObjectDetectionEvent) e;
-                objectLeft = event.objects.get(0).getLeft();
-                objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
-                imageWidth = event.objects.get(0).getImageWidth();
-                if (event.kind == EventKind.OBJECTS_DETECTED){
-                    objectDetectedTlm.setValue(event.objects.get(0).getLabel());
-                    currentLocationTlm.setValue(objectMidpoint);
-                    initialLift(objectMidpoint);
-                }
-            }
-        };
-        elementDetectionTask.init(telemetry, hardwareMap);
-        elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
-    }
-
-    public void initialLift(double position)
+    public void initialLift()
     {
         this.addTask(new DeadReckonTask(this, initialLiftPath, liftMotorDrivetrain){
             @Override
@@ -133,13 +98,13 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to second tier");
-                    initialJump(position);
+                    initialJump();
                 }
             }
         });
     }
 
-    public void initialJump(double position)
+    public void initialJump()
     {
         this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
             @Override
@@ -148,7 +113,7 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("jumped off wall");
-                    goToShippingHub(position);
+                    goToShippingHub();
                 }
             }
         });
@@ -156,43 +121,13 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
 
     public void liftToFirstTier()
     {
-        this.addTask(new DeadReckonTask(this, firstTierLiftPath, liftMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("lifted to first tier");
-                    depositInTier();
-                }
-            }
-        });
-    }
-
-    public void liftToSecondTier()
-    {
-        this.addTask(new DeadReckonTask(this, secondTierLiftPath, liftMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("lifted to second tier");
-                    depositInTier();
-                }
-            }
-        });
-    }
-
-    public void liftToThirdTier()
-    {
         this.addTask(new DeadReckonTask(this, thirdTierLiftPath, liftMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("lifted to third tier");
+                    RobotLog.i("lifted to first tier");
                     depositInTier();
                 }
             }
@@ -214,7 +149,7 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         });
     }
 
-    public void goToShippingHub(double position)
+    public void goToShippingHub()
     {
         this.addTask(new DeadReckonTask(this, shippingPath, drivetrain){
             @Override
@@ -223,13 +158,7 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("went to shipping hub");
-                    if (position < 250) {
-                        liftToFirstTier();
-                    }else if (position < 450){
-                        liftToSecondTier();
-                    }else if (position < 800){
-                        liftToThirdTier();
-                    }
+                    liftToFirstTier();
                 }
             }
         });
@@ -237,37 +166,21 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
 
     public void initPaths()
     {
-        firstPath = new DeadReckonPath();
-        secondPath = new DeadReckonPath();
-        carouselPath = new DeadReckonPath();
         initialPath = new DeadReckonPath();
         initialLiftPath = new DeadReckonPath();
         shippingPath = new DeadReckonPath();
-        firstTierLiftPath = new DeadReckonPath();
-        secondTierLiftPath = new DeadReckonPath();
         thirdTierLiftPath = new DeadReckonPath();
         intakePath = new DeadReckonPath();
+        wareHousePath = new DeadReckonPath();
 
-        firstPath.stop();
-        secondPath.stop();
-        carouselPath.stop();
         initialPath.stop();
         initialLiftPath.stop();
         shippingPath.stop();
-        firstTierLiftPath.stop();
-        secondTierLiftPath.stop();
         thirdTierLiftPath.stop();
         intakePath.stop();
+        wareHousePath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2.5, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14.5, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 9, 0.5);
-
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 9, -0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2, -0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.5);
-
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.2);
+        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, -0.5);
 
         initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
@@ -276,56 +189,11 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 11, 0.3);
         shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.5, 0.3);
 
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, -0.2);
-        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, -0.2);
-        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, -0.2);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 50, -0.2);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 1);
     }
 
-    public void goToCarousel()
-    {
-        this.addTask(new DeadReckonTask(this, firstPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("went forward to carousel");
-                    spinCarousel();
-                }
-            }
-        });
-    }
-
-    public void spinCarousel()
-    {
-        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("spun carousel");
-                    parkInStorageUnit();
-                }
-            }
-        });
-    }
-
-    public void parkInStorageUnit()
-    {
-        this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("parked in storage unit");
-                }
-            }
-        });
-    }
 
     @Override
     public void init()
@@ -364,22 +232,14 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
-        objectImageInfo = new ObjectImageInfo();
-        objectImageInfo.displayTelemetry(this.telemetry);
-
-        objectDetectedTlm = telemetry.addData("Object detected","unknown");
-        currentLocationTlm = telemetry.addData("Current location",-1);
-        imageTlm = telemetry.addData("Image Width",-1);
 
         initPaths();
 
-        setObjectDetection();
     }
 
     @Override
     public void start()
     {
-        //initialLift();
-        addTask(elementDetectionTask);
+        initialLift();
     }
 }
