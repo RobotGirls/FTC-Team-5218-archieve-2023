@@ -49,9 +49,9 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoWarehouse")
+@Autonomous(name = "JavaLM2AutoWH")
 //@Disabled
-public class JavaLM2AutoWarehouseBlue extends Robot {
+public class JavaLM2AutoWarehouse extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
