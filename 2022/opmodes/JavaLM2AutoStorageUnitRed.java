@@ -49,7 +49,7 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoStorageUnitRed2")
+@Autonomous(name = "JavaLM2AutoSURed")
 //@Disabled
 public class JavaLM2AutoStorageUnitRed extends Robot {
 
@@ -68,6 +68,7 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
     private FourWheelDirectDrivetrain drivetrain;
 
     private Telemetry.Item currentLocationTlm;
+    private Telemetry.Item positionTlm;
     private Telemetry.Item objectDetectedTlm;
     private Telemetry.Item imageTlm;
     private double objectConfidence;
@@ -75,6 +76,8 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
     private double objectLeft;
     private double objectMidpoint;
     private double imageWidth;
+
+    private double elementPosition;
 
     ObjectDetectionTask elementDetectionTask;
     ObjectImageInfo objectImageInfo;
@@ -85,7 +88,9 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
     DeadReckonPath initialLiftPath;
     DeadReckonPath initialPath;
     DeadReckonPath shippingPath;
-    DeadReckonPath liftPath;
+    DeadReckonPath firstTierLiftPath;
+    DeadReckonPath secondTierLiftPath;
+    DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
 
     /*
@@ -104,7 +109,7 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
 
     public void setObjectDetection() {
 
-        elementDetectionTask = new ObjectDetectionTask(this, "WebCam1") {
+        elementDetectionTask = new ObjectDetectionTask(this, "Webcam1") {
             @Override
             public void handleEvent(RobotEvent e) {
                 ObjectDetectionEvent event = (ObjectDetectionEvent) e;
@@ -114,27 +119,12 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
                 if (event.kind == EventKind.OBJECTS_DETECTED){
                     objectDetectedTlm.setValue(event.objects.get(0).getLabel());
                     currentLocationTlm.setValue(objectMidpoint);
-                    imageTlm.setValue(imageWidth);
+                    elementPosition = objectMidpoint;
                 }
             }
         };
         elementDetectionTask.init(telemetry, hardwareMap);
         elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
-    }
-
-    public void spinCarousel()
-    {
-        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("spun carousel");
-                    parkInStorageUnit();
-                }
-            }
-        });
     }
 
     public void initialLift()
@@ -146,14 +136,45 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to second tier");
-                    initialJump();
+                    goToShippingHub(elementPosition);
                 }
             }
         });
     }
+
+//    public void initialJump()
+//    {
+//        this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
+//            @Override
+//            public void handleEvent (RobotEvent e){
+//                DeadReckonEvent path = (DeadReckonEvent) e;
+//                if (path.kind == EventKind.PATH_DONE)
+//                {
+//                    RobotLog.i("jumped off wall");
+//                    goToShippingHub(elementPosition);
+//                }
+//            }
+//        });
+//    }
+
+    public void liftToFirstTier()
+    {
+        this.addTask(new DeadReckonTask(this, firstTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
     public void liftToSecondTier()
     {
-        this.addTask(new DeadReckonTask(this, liftPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, secondTierLiftPath, liftMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -166,6 +187,22 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         });
     }
 
+    public void liftToThirdTier()
+    {
+        this.addTask(new DeadReckonTask(this, thirdTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to third tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+
     public void depositInTier()
     {
         this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
@@ -175,6 +212,28 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("deposited into tier");
+                    goToCarousel();
+                }
+            }
+        });
+    }
+
+    public void goToShippingHub(double position)
+    {
+        this.addTask(new DeadReckonTask(this, shippingPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub");
+                    if (position < 250) {
+                        liftToFirstTier();
+                    }else if (position < 450){
+                        liftToSecondTier();
+                    }else if (position < 800){
+                        liftToThirdTier();
+                    }
                 }
             }
         });
@@ -188,7 +247,9 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         initialPath = new DeadReckonPath();
         initialLiftPath = new DeadReckonPath();
         shippingPath = new DeadReckonPath();
-        liftPath = new DeadReckonPath();
+        firstTierLiftPath = new DeadReckonPath();
+        secondTierLiftPath = new DeadReckonPath();
+        thirdTierLiftPath = new DeadReckonPath();
         intakePath = new DeadReckonPath();
 
         firstPath.stop();
@@ -197,29 +258,37 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         initialPath.stop();
         initialLiftPath.stop();
         shippingPath.stop();
-        liftPath.stop();
+        firstTierLiftPath.stop();
+        secondTierLiftPath.stop();
+        thirdTierLiftPath.stop();
         intakePath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2.5, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14.5, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 9, 0.5);
+        //this goes to shipping hub
 
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 9, -0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2, -0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.5);
-
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.2);
-
-        initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
+        // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
         initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
 
-        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 11, 0.3);
-        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.5, 0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
 
-        liftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, -0.2);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, 0.2);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.2);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 28, -0.2);
 
-        intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 1);
+        intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
+
+        //this path goes to the carousel
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.5);
+
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, 0.75);
+
+        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 7, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+
     }
 
     public void goToCarousel()
@@ -237,30 +306,16 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         });
     }
 
-    public void initialJump()
+    public void spinCarousel()
     {
-        this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
+        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("jumped off wall");
-                    goToShippingHub();
-                }
-            }
-        });
-    }
-    public void goToShippingHub()
-    {
-        this.addTask(new DeadReckonTask(this, shippingPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("went to shipping hub");
-                    liftToSecondTier();
+                    RobotLog.i("spun carousel");
+                    parkInStorageUnit();
                 }
             }
         });
@@ -279,6 +334,7 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
             }
         });
     }
+
     @Override
     public void init()
     {
@@ -296,11 +352,18 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
+
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
         singleMotorDrivetrain.resetEncoders();
@@ -321,15 +384,25 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
         currentLocationTlm = telemetry.addData("Current location",-1);
         imageTlm = telemetry.addData("Image Width",-1);
 
+        positionTlm = telemetry.addData("Position:","unknown");
+
         initPaths();
 
         setObjectDetection();
+        addTask(elementDetectionTask);
     }
 
     @Override
     public void start()
     {
-        //initialLift();
-        addTask(elementDetectionTask);
+        initialLift();
+
+        if (elementPosition < 250) {
+            positionTlm.setValue("Detected in First Position");
+        }else if (elementPosition < 450){
+            positionTlm.setValue("Detected in Second Position");
+        }else if (elementPosition < 800){
+            positionTlm.setValue("Detected in Third Position");
+        }
     }
 }

@@ -49,9 +49,9 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoStorageUnitBlueTopTier")
+@Autonomous(name = "JavaLM2AutoWarehouse")
 //@Disabled
-public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
+public class JavaLM2AutoWarehouseBlue extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -65,15 +65,34 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
-    DeadReckonPath wareHousePath;
-
     private FourWheelDirectDrivetrain drivetrain;
 
+    private Telemetry.Item currentLocationTlm;
+    private Telemetry.Item positionTlm;
+    private Telemetry.Item objectDetectedTlm;
+    private Telemetry.Item imageTlm;
+    private double objectConfidence;
+
+    private double objectLeft;
+    private double objectMidpoint;
+    private double imageWidth;
+
+    private double elementPosition;
+
+    ObjectDetectionTask elementDetectionTask;
+    ObjectImageInfo objectImageInfo;
+
+    DeadReckonPath firstPath;
+    DeadReckonPath secondPath;
+    DeadReckonPath carouselPath;
     DeadReckonPath initialLiftPath;
     DeadReckonPath initialPath;
     DeadReckonPath shippingPath;
+    DeadReckonPath firstTierLiftPath;
+    DeadReckonPath secondTierLiftPath;
     DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
+    DeadReckonPath wareHousePath;
 
     /*
      * The default event handler for the robot.
@@ -89,6 +108,26 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
         }
     }
 
+    public void setObjectDetection() {
+
+        elementDetectionTask = new ObjectDetectionTask(this, "Webcam1") {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                ObjectDetectionEvent event = (ObjectDetectionEvent) e;
+                objectLeft = event.objects.get(0).getLeft();
+                objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
+                imageWidth = event.objects.get(0).getImageWidth();
+                if (event.kind == EventKind.OBJECTS_DETECTED){
+                    objectDetectedTlm.setValue(event.objects.get(0).getLabel());
+                    currentLocationTlm.setValue(objectMidpoint);
+                    elementPosition = objectMidpoint;
+                }
+            }
+        };
+        elementDetectionTask.init(telemetry, hardwareMap);
+        elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
+    }
+
     public void initialLift()
     {
         this.addTask(new DeadReckonTask(this, initialLiftPath, liftMotorDrivetrain){
@@ -98,30 +137,30 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to second tier");
-                    initialJump();
+                    goToShippingHub(elementPosition);
                 }
             }
         });
     }
 
-    public void initialJump()
-    {
-        this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("jumped off wall");
-                    goToShippingHub();
-                }
-            }
-        });
-    }
+//    public void initialJump()
+//    {
+//        this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
+//            @Override
+//            public void handleEvent (RobotEvent e){
+//                DeadReckonEvent path = (DeadReckonEvent) e;
+//                if (path.kind == EventKind.PATH_DONE)
+//                {
+//                    RobotLog.i("jumped off wall");
+//                    goToShippingHub(elementPosition);
+//                }
+//            }
+//        });
+//    }
 
     public void liftToFirstTier()
     {
-        this.addTask(new DeadReckonTask(this, thirdTierLiftPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, firstTierLiftPath, liftMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -134,6 +173,35 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
         });
     }
 
+    public void liftToSecondTier()
+    {
+        this.addTask(new DeadReckonTask(this, secondTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to second tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void liftToThirdTier()
+    {
+        this.addTask(new DeadReckonTask(this, thirdTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to third tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
 
     public void depositInTier()
     {
@@ -144,12 +212,13 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("deposited into tier");
+                   parkInWarehouse();
                 }
             }
         });
     }
 
-    public void goToShippingHub()
+    public void goToShippingHub(double position)
     {
         this.addTask(new DeadReckonTask(this, shippingPath, drivetrain){
             @Override
@@ -158,7 +227,13 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("went to shipping hub");
-                    liftToFirstTier();
+                    if (position < 250) {
+                        liftToFirstTier();
+                    }else if (position < 450){
+                        liftToSecondTier();
+                    }else if (position < 800){
+                        liftToThirdTier();
+                    }
                 }
             }
         });
@@ -194,6 +269,21 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 1);
     }
 
+
+
+    public void parkInWarehouse()
+    {
+        this.addTask(new DeadReckonTask(this, wareHousePath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("parked in storage unit");
+                }
+            }
+        });
+    }
 
     @Override
     public void init()
@@ -232,14 +322,32 @@ public class JavaLM2AutoWarehouseBlueTopTier extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
+        objectImageInfo = new ObjectImageInfo();
+        objectImageInfo.displayTelemetry(this.telemetry);
+
+        objectDetectedTlm = telemetry.addData("Object detected","unknown");
+        currentLocationTlm = telemetry.addData("Current location",-1);
+        imageTlm = telemetry.addData("Image Width",-1);
+
+        positionTlm = telemetry.addData("Position:","unknown");
 
         initPaths();
 
+        setObjectDetection();
+        addTask(elementDetectionTask);
     }
 
     @Override
     public void start()
     {
         initialLift();
+
+        if (elementPosition < 250) {
+            positionTlm.setValue("Detected in First Position");
+        }else if (elementPosition < 450){
+            positionTlm.setValue("Detected in Second Position");
+        }else if (elementPosition < 800){
+            positionTlm.setValue("Detected in Third Position");
+        }
     }
 }

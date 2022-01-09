@@ -49,7 +49,7 @@ import team25core.Robot;
 import team25core.RobotEvent;
 
 
-@Autonomous(name = "JavaLM2AutoStorageUnitBlue")
+@Autonomous(name = "JavaLM2AutoSUBlue")
 //@Disabled
 public class JavaLM2AutoStorageUnitBlue extends Robot {
 
@@ -263,27 +263,31 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         thirdTierLiftPath.stop();
         intakePath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, 0.5);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 43, -0.5);
+        //this goes to shipping hub
 
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 4, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
-
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, -1);
-
-        initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
+        // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
         initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
 
-        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 11, -0.3);
-        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, -0.3);
+        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.3);
 
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.2);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, 0.2);
         secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.2);
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 28, -0.2);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
+
+        //this path goes to the carousel
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 36, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 7, -0.5);
+
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, -0.75);
+
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, 0.5);
     }
 
     public void goToCarousel()
@@ -354,6 +358,11 @@ public class JavaLM2AutoStorageUnitBlue extends Robot {
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
+
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
         singleMotorDrivetrain.resetEncoders();
