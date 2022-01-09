@@ -48,7 +48,7 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "JavaLM1AutoWarehouseRed1")
+@Autonomous(name = "JavaLM1AutoWHRed")
 //@Disabled
 public class JavaLM1AutoWarehouseRed extends Robot {
 
