@@ -92,7 +92,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         // using encoders to record ticks
-
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -138,7 +137,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_X_DOWN:
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
-                        carouselMech.setPower(0.2);
+                        carouselMech.setPower(0.8);
                         break;
                     case BUTTON_X_UP:
                     case BUTTON_Y_UP:
@@ -148,7 +147,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_Y_DOWN:
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
-                        carouselMech.setPower(0.2);
+                        carouselMech.setPower(0.8);
                         break;
                     default:
                         buttonTlm.setValue("Not Moving");
