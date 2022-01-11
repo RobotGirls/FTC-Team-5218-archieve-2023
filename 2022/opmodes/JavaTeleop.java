@@ -67,6 +67,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
 
+    private boolean currentlySlow = false;
+
     private DeadmanMotorTask liftMotorUpTask;
     private DeadmanMotorTask liftMotorDownTask;
 
@@ -121,6 +123,31 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //Gamepad 1
         this.addTask(drivetask);
+
+        this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_1) {
+            //@Override
+            public void handleEvent(RobotEvent e) {
+                GamepadEvent gamepadEvent = (GamepadEvent) e;
+
+                switch (gamepadEvent.kind) {
+                    case BUTTON_X_DOWN:
+                        // If slow, then normal speed. If fast, then slow speed of motors.
+                        //pertains to slowmode
+                        if (currentlySlow) {
+                            drivetask.slowDown(1.0);
+                            currentlySlow = false;
+                        } else {
+                            drivetask.slowDown(0.3);
+                            currentlySlow = true;
+                        }
+                        break;
+
+                    default:
+                        buttonTlm.setValue("Not Moving");
+                        break;
+                }
+            }
+        });
 
         //Gamepad 2
         this.addTask(liftMotorUpTask);
