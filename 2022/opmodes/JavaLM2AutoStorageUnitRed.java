@@ -135,7 +135,7 @@ public class JavaLM2AutoStorageUnitRed extends Robot {
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("lifted to second tier");
+                    RobotLog.i("initial lift");
                     goToShippingHub(elementPosition);
                 }
             }
