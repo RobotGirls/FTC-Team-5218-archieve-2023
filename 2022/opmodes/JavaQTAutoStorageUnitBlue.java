@@ -131,6 +131,7 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
 
     public void initialLift(double elementPosition)
     {
+        liftToThirdTier();
         if (elementPosition < 250) {
             liftToFirstTier();
             positionTlm.setValue("Detected in First Position");
@@ -203,7 +204,6 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
         });
     }
 
-
     public void depositInTier()
     {
         this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
@@ -263,7 +263,6 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
             }
         });
     }
-
 
     public void initPaths()
     {

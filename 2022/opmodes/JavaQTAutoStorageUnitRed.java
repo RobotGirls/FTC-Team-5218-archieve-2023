@@ -131,26 +131,17 @@ public class JavaQTAutoStorageUnitRed extends Robot {
 
     public void initialLift(double elementPosition)
     {
-        this.addTask(new DeadReckonTask(this, initialLiftPath, liftMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("initial lift");
-                    if (elementPosition < 250) {
-                        liftToFirstTier();
-                        positionTlm.setValue("Detected in First Position");
-                    }else if (elementPosition < 450){
-                        liftToSecondTier();
-                        positionTlm.setValue("Detected in Second Position");
-                    }else if (elementPosition < 800){
-                        liftToThirdTier();
-                        positionTlm.setValue("Detected in Third Position");
-                    }
-                }
-            }
-        });
+        // liftToSecondTier();
+        if (elementPosition < 250) {
+            liftToFirstTier();
+            positionTlm.setValue("Detected in First Position");
+        }else if (elementPosition < 450){
+            liftToSecondTier();
+            positionTlm.setValue("Detected in Second Position");
+        }else if (elementPosition < 800){
+            liftToThirdTier();
+            positionTlm.setValue("Detected in Third Position");
+        }
     }
 
 //    public void initialJump()
@@ -274,7 +265,6 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         });
     }
 
-
     public void initPaths()
     {
         firstPath = new DeadReckonPath();
@@ -307,11 +297,15 @@ public class JavaQTAutoStorageUnitRed extends Robot {
 
         // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
-        initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
+        // initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
 
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.3);
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
+
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.2);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19, -0.2);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.4);
 
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
@@ -322,12 +316,8 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.3);
 
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.3);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, 0.3);
-
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, 0.2);
-        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.2);
-        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 28, -0.2);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.3);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
@@ -339,7 +329,7 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, 0.75);
 
         secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 7, 0.5);
-        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.5);
 
     }
 
