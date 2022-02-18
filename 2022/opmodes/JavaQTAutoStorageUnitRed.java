@@ -75,9 +75,12 @@ public class JavaQTAutoStorageUnitRed extends Robot {
 
     private double objectLeft;
     private double objectMidpoint;
+    private double objectWidth;
     private double imageWidth;
 
     private double elementPosition;
+
+    private int numObjects;
 
     ObjectDetectionTask elementDetectionTask;
     ObjectImageInfo objectImageInfo;
@@ -119,12 +122,25 @@ public class JavaQTAutoStorageUnitRed extends Robot {
                 objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
                 imageWidth = event.objects.get(0).getImageWidth();
                 if (event.kind == EventKind.OBJECTS_DETECTED){
-                    objectDetectedTlm.setValue(event.objects.get(0).getLabel());
-                    currentLocationTlm.setValue(objectMidpoint);
-                    elementPosition = objectMidpoint;
+                    numObjects = event.objects.size();
+                    if (numObjects > 1) {
+                        for (int i = 0; i < event.objects.size(); i++) {
+                            objectWidth = event.objects.get(i).getWidth();
+                            if (objectWidth < 180) {
+                                objectDetectedTlm.setValue(event.objects.get(i).getLabel());
+                                currentLocationTlm.setValue(objectMidpoint);
+                                elementPosition = objectMidpoint;
+                            }
+                        }
+                    } else {
+                        objectDetectedTlm.setValue(event.objects.get(0).getLabel());
+                        currentLocationTlm.setValue(objectMidpoint);
+                        elementPosition = objectMidpoint;
+                    }
                 }
             }
         };
+        elementDetectionTask.rateLimit(1000);
         elementDetectionTask.init(telemetry, hardwareMap);
         elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
     }
@@ -309,14 +325,14 @@ public class JavaQTAutoStorageUnitRed extends Robot {
 
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.3);
 
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.3);
 
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.3);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.3);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.3);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
@@ -423,7 +439,7 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         objectImageInfo.displayTelemetry(this.telemetry);
 
         objectDetectedTlm = telemetry.addData("Object detected","unknown");
-        currentLocationTlm = telemetry.addData("Current location",-1);
+        currentLocationTlm = telemetry.addData("Current location",600); //Go to top tier
         imageTlm = telemetry.addData("Image Width",-1);
 
         positionTlm = telemetry.addData("Position:","unknown");
