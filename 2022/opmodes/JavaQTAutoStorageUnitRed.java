@@ -71,10 +71,21 @@ public class JavaQTAutoStorageUnitRed extends Robot {
     private Telemetry.Item positionTlm;
     private Telemetry.Item objectDetectedTlm;
     private Telemetry.Item imageTlm;
+    private Telemetry.Item whereAmI;
+
+    private Telemetry.Item objectWidth1Tlm;
+    private Telemetry.Item objectWidth2Tlm;
+
+    private Telemetry.Item confidenceTlm;
     private double objectConfidence;
+    private Telemetry.Item confidence2Tlm;
+    private Telemetry.Item numObjectsTlm;
 
     private double objectLeft;
     private double objectMidpoint;
+    private double firstMidpoint;
+    private double randomizedMidpoint;
+    private boolean first = true;
     private double objectWidth;
     private double imageWidth;
 
@@ -121,25 +132,55 @@ public class JavaQTAutoStorageUnitRed extends Robot {
                 objectLeft = event.objects.get(0).getLeft();
                 objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
                 imageWidth = event.objects.get(0).getImageWidth();
+                whereAmI.setValue("in handleEvent");
+                objectConfidence = event.objects.get(0).getConfidence();
+                confidenceTlm.setValue(objectConfidence);
                 if (event.kind == EventKind.OBJECTS_DETECTED){
                     numObjects = event.objects.size();
+                    numObjectsTlm.setValue(numObjects);
+                    if (first) {
+                        firstMidpoint = objectMidpoint;
+                        first = false;
+                        objectDetectedTlm.setValue(event.objects.get(0).getLabel());
+                        randomizedMidpoint = firstMidpoint;
+                    }
                     if (numObjects > 1) {
-                        for (int i = 0; i < event.objects.size(); i++) {
+                        objectConfidence = event.objects.get(1).getConfidence();
+                        confidence2Tlm.setValue(objectConfidence);
+                        for (int i = 0; i < numObjects; i++) {
                             objectWidth = event.objects.get(i).getWidth();
+                            objectLeft = event.objects.get(i).getLeft();
+                            objectMidpoint = (objectWidth/2.0) + objectLeft;
+                            if (i == 0) {
+                                objectWidth1Tlm.setValue(objectWidth);
+                            } else {
+                                objectWidth2Tlm.setValue(objectWidth);
+                            }
                             if (objectWidth < 180) {
-                                objectDetectedTlm.setValue(event.objects.get(i).getLabel());
-                                currentLocationTlm.setValue(objectMidpoint);
-                                elementPosition = objectMidpoint;
+                                //typical width seems to be 145-160 pixels but if it is greater than that it could be the background
+                                if (numObjects > 1) {
+                                    if (Math.abs(firstMidpoint - objectMidpoint) > 5){
+                                        randomizedMidpoint = objectMidpoint;
+                                        objectDetectedTlm.setValue(event.objects.get(i).getLabel());
+                                    }
+                                }
+                                currentLocationTlm.setValue(randomizedMidpoint);
+                                elementPosition = randomizedMidpoint;
+                                //whereAmI.setValue("more than one object detected");
                             }
                         }
                     } else {
+                        objectLeft = event.objects.get(0).getLeft();
+                        objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
                         objectDetectedTlm.setValue(event.objects.get(0).getLabel());
                         currentLocationTlm.setValue(objectMidpoint);
                         elementPosition = objectMidpoint;
+                        //whereAmI.setValue("one object detected");
                     }
                 }
             }
         };
+        //whereAmI.setValue("setObjectDetection");
         elementDetectionTask.rateLimit(1000);
         elementDetectionTask.init(telemetry, hardwareMap);
         elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
@@ -443,6 +484,16 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         imageTlm = telemetry.addData("Image Width",-1);
 
         positionTlm = telemetry.addData("Position:","unknown");
+
+        whereAmI = telemetry.addData("location in code", "init");
+
+        confidenceTlm = telemetry.addData("confidence", "none");
+        confidence2Tlm = telemetry.addData("confidence2", "none");
+
+        numObjectsTlm = telemetry.addData("numObjectsDetected", "none");
+
+        objectWidth1Tlm = telemetry.addData("object1Width", "none");
+        objectWidth2Tlm = telemetry.addData("object2Width", "none");
 
         initPaths();
 
