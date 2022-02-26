@@ -409,7 +409,7 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
         pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.5);
         pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 36,  -0.3);
         pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4.3, -0.3);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
 
         carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, -0.75);
 

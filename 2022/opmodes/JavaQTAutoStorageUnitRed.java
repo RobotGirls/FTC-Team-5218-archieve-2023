@@ -361,7 +361,7 @@ public class JavaQTAutoStorageUnitRed extends Robot {
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
 
         firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.2);
-        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19, -0.2);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.2);
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.4);
 
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
@@ -373,13 +373,13 @@ public class JavaQTAutoStorageUnitRed extends Robot {
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.3);
 
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.3);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.3);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.3);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
         //this path goes to the carousel
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.5);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, -0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.5);
         firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.5);
 
