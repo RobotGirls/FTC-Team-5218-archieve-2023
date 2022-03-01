@@ -1,0 +1,561 @@
+/*
+Copyright (c) September 2017 FTC Teams 25/5218
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted (subject to the limitations in the disclaimer below) provided that
+the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list
+of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+Neither the name of FTC Teams 25/5218 nor the names of their contributors may be used to
+endorse or promote products derived from this software without specific prior
+written permission.
+
+NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+package opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.RobotLog;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import team25core.DeadReckonPath;
+import team25core.DeadReckonTask;
+import team25core.FourWheelDirectDrivetrain;
+import team25core.ObjectDetectionTask;
+import team25core.ObjectImageInfo;
+import team25core.OneWheelDirectDrivetrain;
+import team25core.Robot;
+import team25core.RobotEvent;
+import team25core.SingleShotTimerTask;
+
+
+@Autonomous(name = "SUBlueRegionalsJavaDelay")
+//@Disabled
+public class BlueJavaSURegionals extends Robot {
+
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
+
+    private DcMotor carouselMech;
+    private OneWheelDirectDrivetrain singleMotorDrivetrain;
+    private OneWheelDirectDrivetrain liftMotorDrivetrain;
+    private OneWheelDirectDrivetrain intakeMotorDrivetrain;
+    private DcMotor liftMotor;
+    private DcMotor intakeMotor;
+    private String  tierLevel = "unknownTier";
+
+    private FourWheelDirectDrivetrain drivetrain;
+
+    private Telemetry.Item currentLocationTlm;
+    private Telemetry.Item positionTlm;
+    private Telemetry.Item objectDetectedTlm;
+    private Telemetry.Item imageTlm;
+    private Telemetry.Item whereAmI;
+
+    private Telemetry.Item objectWidth1Tlm;
+    private Telemetry.Item objectWidth2Tlm;
+
+    private Telemetry.Item confidenceTlm;
+    private double objectConfidence;
+    private Telemetry.Item confidence2Tlm;
+    private Telemetry.Item numObjectsTlm;
+
+    private double objectLeft;
+    private double objectMidpoint;
+    private double firstMidpoint;
+    private double randomizedMidpoint;
+    private boolean first = true;
+    private double objectWidth;
+    private double imageWidth;
+
+    private double elementPosition;
+
+    private int numObjects;
+
+    ObjectDetectionTask elementDetectionTask;
+    ObjectImageInfo objectImageInfo;
+
+    DeadReckonPath pathForTier1;
+    DeadReckonPath pathForTier2;
+    DeadReckonPath pathForTier3;
+    DeadReckonPath secondPath;
+    DeadReckonPath carouselPath;
+    DeadReckonPath initialLiftPath;
+    DeadReckonPath initialPath;
+    DeadReckonPath firstTierPath;
+    DeadReckonPath secondTierPath;
+    DeadReckonPath thirdTierPath;
+    DeadReckonPath firstTierLiftPath;
+    DeadReckonPath secondTierLiftPath;
+    DeadReckonPath thirdTierLiftPath;
+    DeadReckonPath intakePath;
+
+    /*
+     * The default event handler for the robot.
+     */
+    @Override
+    public void handleEvent(RobotEvent e)
+    {
+        /*
+         * Every time we complete a segment drop a note in the robot log.
+         */
+        if (e instanceof DeadReckonTask.DeadReckonEvent) {
+            RobotLog.i("Completed path segment %d", ((DeadReckonTask.DeadReckonEvent)e).segment_num);
+        }
+    }
+
+    public void setObjectDetection() {
+
+        elementDetectionTask = new ObjectDetectionTask(this, "Webcam1") {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                ObjectDetectionEvent event = (ObjectDetectionEvent) e;
+                objectLeft = event.objects.get(0).getLeft();
+                objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
+                imageWidth = event.objects.get(0).getImageWidth();
+                whereAmI.setValue("in handleEvent");
+                objectConfidence = event.objects.get(0).getConfidence();
+                confidenceTlm.setValue(objectConfidence);
+                if (event.kind == EventKind.OBJECTS_DETECTED){
+                    numObjects = event.objects.size();
+                    numObjectsTlm.setValue(numObjects);
+                    if (first) {
+                        firstMidpoint = objectMidpoint;
+                        first = false;
+                        objectDetectedTlm.setValue(event.objects.get(0).getLabel());
+                        randomizedMidpoint = firstMidpoint;
+                    }
+                    if (numObjects > 1) {
+                        objectConfidence = event.objects.get(1).getConfidence();
+                        confidence2Tlm.setValue(objectConfidence);
+                        for (int i = 0; i < numObjects; i++) {
+                            objectWidth = event.objects.get(i).getWidth();
+                            objectLeft = event.objects.get(i).getLeft();
+                            objectMidpoint = (objectWidth/2.0) + objectLeft;
+                            if (i == 0) {
+                                objectWidth1Tlm.setValue(objectWidth);
+                            } else {
+                                objectWidth2Tlm.setValue(objectWidth);
+                            }
+                            if (objectWidth < 180) {
+                                //typical width seems to be 145-160 pixels but if it is greater than that it could be the background
+                                if (numObjects > 1) {
+                                    if (Math.abs(firstMidpoint - objectMidpoint) > 5){
+                                        randomizedMidpoint = objectMidpoint;
+                                        objectDetectedTlm.setValue(event.objects.get(i).getLabel());
+                                    }
+                                }
+                                currentLocationTlm.setValue(randomizedMidpoint);
+                                elementPosition = randomizedMidpoint;
+                                whereAmI.setValue("more than one object detected");
+                            }
+                        }
+                    } else {
+                        objectLeft = event.objects.get(0).getLeft();
+                        objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
+                        objectDetectedTlm.setValue(event.objects.get(0).getLabel());
+                        currentLocationTlm.setValue(objectMidpoint);
+                        elementPosition = objectMidpoint;
+                        whereAmI.setValue("one object detected");
+                    }
+                }
+            }
+        };
+        whereAmI.setValue("setObjectDetection");
+        elementDetectionTask.rateLimit(1000);
+        elementDetectionTask.init(telemetry, hardwareMap);
+        elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
+    }
+
+    public void delay(int seconds)
+    {
+        this.addTask(new SingleShotTimerTask(this, 1000*seconds) {
+            @Override
+            public void handleEvent (RobotEvent e){
+                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
+                switch(event.kind) {
+                    case EXPIRED:
+                        initialLift(elementPosition);
+                        break;
+                }
+            }
+        });
+    }
+
+    public void initialLift(double elementPosition)
+    {
+        whereAmI.setValue("in initialLift");
+        if (elementPosition < 250) {
+            whereAmI.setValue("first tier");
+            tierLevel = "tier1";
+            liftToFirstTier();
+            positionTlm.setValue("Detected in First Position");
+        }else if (elementPosition < 450){
+            whereAmI.setValue("second tier");
+            tierLevel = "tier2";
+            liftToSecondTier();
+            positionTlm.setValue("Detected in Second Position");
+        }else if (elementPosition < 800){
+            whereAmI.setValue("third tier");
+            tierLevel = "tier3";
+            liftToThirdTier();
+            positionTlm.setValue("Detected in Third Position");
+        }
+    }
+
+//    public void initialJump()
+//    {
+//        this.addTask(new DeadReckonTask(this, initialPath, drivetrain){
+//            @Override
+//            public void handleEvent (RobotEvent e){
+//                DeadReckonEvent path = (DeadReckonEvent) e;
+//                if (path.kind == EventKind.PATH_DONE)
+//                {
+//                    RobotLog.i("jumped off wall");
+//                    goToShippingHub(elementPosition);
+//                }
+//            }
+//        });
+//    }
+
+    public void liftToFirstTier()
+    {
+        this.addTask(new DeadReckonTask(this, firstTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to first tier");
+                    goToFirstTier();
+                }
+            }
+        });
+    }
+
+    public void liftToSecondTier()
+    {
+        this.addTask(new DeadReckonTask(this, secondTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to second tier");
+                    goToSecondTier();
+                }
+            }
+        });
+    }
+
+    public void liftToThirdTier()
+    {
+        this.addTask(new DeadReckonTask(this, thirdTierLiftPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lifted to third tier");
+                    goToThirdTier();
+                }
+            }
+        });
+    }
+
+    public void depositInTier()
+    {
+        this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("deposited into tier");
+                    whereAmI.setValue("depositInTier");
+                    if (tierLevel == "tier1") {
+                        goToCarousel(pathForTier1);
+                    } else if (tierLevel == "tier2") {
+                        goToCarousel(pathForTier2);
+                    } else {
+                        goToCarousel(pathForTier3);
+
+                    }
+                }
+            }
+        });
+    }
+
+    public void goToFirstTier()
+    {
+        this.addTask(new DeadReckonTask(this, firstTierPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void goToSecondTier()
+    {
+        this.addTask(new DeadReckonTask(this, secondTierPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void goToThirdTier()
+    {
+        this.addTask(new DeadReckonTask(this, thirdTierPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void initPaths()
+    {
+        pathForTier1 = new DeadReckonPath();
+        pathForTier2 = new DeadReckonPath();
+        pathForTier3 = new DeadReckonPath();
+        secondPath = new DeadReckonPath();
+        carouselPath = new DeadReckonPath();
+        initialPath = new DeadReckonPath();
+        initialLiftPath = new DeadReckonPath();
+        firstTierPath = new DeadReckonPath();
+        secondTierPath = new DeadReckonPath();
+        thirdTierPath = new DeadReckonPath();
+        firstTierLiftPath = new DeadReckonPath();
+        secondTierLiftPath = new DeadReckonPath();
+        thirdTierLiftPath = new DeadReckonPath();
+        intakePath = new DeadReckonPath();
+
+        pathForTier1.stop();
+        pathForTier2.stop();
+        pathForTier3.stop();
+        secondPath.stop();
+        carouselPath.stop();
+        initialPath.stop();
+        initialLiftPath.stop();
+        firstTierPath.stop();
+        secondTierPath.stop();
+        thirdTierPath.stop();
+        firstTierLiftPath.stop();
+        secondTierLiftPath.stop();
+        thirdTierLiftPath.stop();
+        intakePath.stop();
+
+        whereAmI.setValue("init paths beginning");
+        //this goes to shipping hub
+
+        // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
+
+//        initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
+
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.7);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 18, -0.7);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
+
+        firstTierPath.addSegment(DeadReckonPath .SegmentType.STRAIGHT, 3, 0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.4, -0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.47, 0.5);
+
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.5, -0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.3, 0.5);
+
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.7, -0.5);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.99, 0.5);
+
+        intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
+
+        //this path goes to the carousel
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.TURN, 36, -0.3);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.TURN, 36, -0.3);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.5);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 36,  -0.3);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, -0.75);
+
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, 0.5);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 0.5, -0.5);
+
+        whereAmI.setValue("init paths end");
+
+    }
+
+    public void goToCarousel(DeadReckonPath pathForTier)
+    {
+        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went forward to carousel");
+                    spinCarousel();
+                }
+            }
+        });
+    }
+
+    public void spinCarousel()
+    {
+        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("spun carousel");
+                    whereAmI.setValue("spinCarousel");
+                    parkInStorageUnit();
+                }
+            }
+        });
+    }
+
+    public void parkInStorageUnit()
+    {
+        this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("parked in storage unit");
+                    whereAmI.setValue("parkInStorageUnit");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void init()
+    {
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
+        liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        carouselMech.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
+        drivetrain.resetEncoders();
+        drivetrain.encodersOn();
+
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
+        singleMotorDrivetrain.resetEncoders();
+        singleMotorDrivetrain.encodersOn();
+
+        liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
+        liftMotorDrivetrain.resetEncoders();
+        liftMotorDrivetrain.encodersOn();
+
+        intakeMotorDrivetrain = new OneWheelDirectDrivetrain(intakeMotor);
+        intakeMotorDrivetrain.resetEncoders();
+        intakeMotorDrivetrain.encodersOn();
+
+        objectImageInfo = new ObjectImageInfo();
+        objectImageInfo.displayTelemetry(this.telemetry);
+
+        objectDetectedTlm = telemetry.addData("Object detected","unknown");
+        currentLocationTlm = telemetry.addData("Current location",600); //Go to top tier
+        imageTlm = telemetry.addData("Image Width",-1);
+
+        positionTlm = telemetry.addData("Position:","unknown");
+
+        whereAmI = telemetry.addData("location in code", "init");
+
+        confidenceTlm = telemetry.addData("confidence", "none");
+        confidence2Tlm = telemetry.addData("confidence2", "none");
+
+        numObjectsTlm = telemetry.addData("numObjectsDetected", "none");
+
+        objectWidth1Tlm = telemetry.addData("object1Width", "none");
+        objectWidth2Tlm = telemetry.addData("object2Width", "none");
+
+        initPaths();
+
+        setObjectDetection();
+        addTask(elementDetectionTask);
+    }
+
+    @Override
+    public void start()
+    {
+        whereAmI.setValue("in Start");
+        //addTask(elementDetectionTask);
+        delay(10);
+        //initialLift(elementPosition);
+
+    }
+}
