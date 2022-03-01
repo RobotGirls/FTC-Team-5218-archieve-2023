@@ -35,6 +35,7 @@ package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -47,6 +48,7 @@ import team25core.ObjectImageInfo;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
+import team25core.TouchSensorCriteria;
 
 
 @Autonomous(name = "JavaQTAutoSUBlue1")
@@ -111,6 +113,10 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
     DeadReckonPath secondTierLiftPath;
     DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
+
+    //sensors and criteria
+    private TouchSensor touchCarousel;
+    private TouchSensorCriteria touchCarouselCriteria;
 
     /*
      * The default event handler for the robot.
@@ -422,14 +428,21 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
 
     public void goToCarousel(DeadReckonPath pathForTier)
     {
-        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain){
+        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain, touchCarouselCriteria){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
+                switch (path.kind )
                 {
-                    RobotLog.i("went forward to carousel");
-                    spinCarousel();
+                    case PATH_DONE:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        break;
+                    case SENSOR_SATISFIED:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        this.disableSensors();
+                        break;
                 }
             }
         });
@@ -508,6 +521,10 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
+        //sensors
+        touchCarousel = hardwareMap.get(TouchSensor.class, "touchCarousel");
+        touchCarouselCriteria = new TouchSensorCriteria(touchCarousel);
+
         objectImageInfo = new ObjectImageInfo();
         objectImageInfo.displayTelemetry(this.telemetry);
 
@@ -539,6 +556,5 @@ public class JavaQTAutoStorageUnitBlue extends Robot {
         whereAmI.setValue("in Start");
         //addTask(elementDetectionTask);
         initialLift(elementPosition);
-
     }
 }

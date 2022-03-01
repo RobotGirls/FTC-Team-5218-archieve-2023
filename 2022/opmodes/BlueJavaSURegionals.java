@@ -35,6 +35,7 @@ package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -48,6 +49,7 @@ import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
+import team25core.TouchSensorCriteria;
 
 
 @Autonomous(name = "SUBlueRegionalsJavaDelay")
@@ -97,6 +99,9 @@ public class BlueJavaSURegionals extends Robot {
 
     ObjectDetectionTask elementDetectionTask;
     ObjectImageInfo objectImageInfo;
+
+    private TouchSensor touchCarousel;
+    private TouchSensorCriteria touchCarouselCriteria;
 
     DeadReckonPath pathForTier1;
     DeadReckonPath pathForTier2;
@@ -438,14 +443,21 @@ public class BlueJavaSURegionals extends Robot {
 
     public void goToCarousel(DeadReckonPath pathForTier)
     {
-        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain){
+        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain, touchCarouselCriteria){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
+                switch (path.kind )
                 {
-                    RobotLog.i("went forward to carousel");
-                    spinCarousel();
+                    case PATH_DONE:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        break;
+                    case SENSOR_SATISFIED:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        this.disableSensors();
+                        break;
                 }
             }
         });
@@ -523,6 +535,10 @@ public class BlueJavaSURegionals extends Robot {
         intakeMotorDrivetrain = new OneWheelDirectDrivetrain(intakeMotor);
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
+
+        //sensors
+        touchCarousel = hardwareMap.get(TouchSensor.class, "touchCarousel");
+        touchCarouselCriteria = new TouchSensorCriteria(touchCarousel);
 
         objectImageInfo = new ObjectImageInfo();
         objectImageInfo.displayTelemetry(this.telemetry);
