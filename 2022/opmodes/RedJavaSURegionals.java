@@ -406,7 +406,7 @@ public class RedJavaSURegionals extends Robot {
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
         //this path goes to the carousel
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15.5, -0.6);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.6);
         firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 32, -0.4);
 //        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.6);
 

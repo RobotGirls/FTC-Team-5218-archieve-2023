@@ -50,7 +50,7 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "WHBlueRegionalsJava")
+@Autonomous(name = "WHBlueRegionalsJavaDelay")
 //@Disabled
 public class BlueJavaWHRegionals extends Robot {
 
@@ -109,7 +109,6 @@ public class BlueJavaWHRegionals extends Robot {
     DeadReckonPath secondTierLiftPath;
     DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
-
     DeadReckonPath wareHousePath;
 
     /*
@@ -279,22 +278,6 @@ public class BlueJavaWHRegionals extends Robot {
         });
     }
 
-
-    public void depositInTier()
-    {
-        this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("deposited into tier");
-                    parkInWarehouse();
-                }
-            }
-        });
-    }
-
     public void goToFirstTier()
     {
         this.addTask(new DeadReckonTask(this, firstTierPath, drivetrain){
@@ -340,6 +323,21 @@ public class BlueJavaWHRegionals extends Robot {
         });
     }
 
+    public void depositInTier()
+    {
+        this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("deposited into tier");
+                    parkInWarehouse();
+                }
+            }
+        });
+    }
+
     public void initPaths()
     {
         initialPath = new DeadReckonPath();
@@ -351,6 +349,7 @@ public class BlueJavaWHRegionals extends Robot {
         secondTierLiftPath = new DeadReckonPath();
         thirdTierLiftPath = new DeadReckonPath();
         intakePath = new DeadReckonPath();
+        wareHousePath = new DeadReckonPath();
 
         initialPath.stop();
         initialLiftPath.stop();
@@ -361,6 +360,7 @@ public class BlueJavaWHRegionals extends Robot {
         secondTierLiftPath.stop();
         thirdTierLiftPath.stop();
         intakePath.stop();
+        wareHousePath.stop();
 
         //this goes to shipping hub
 
@@ -376,23 +376,22 @@ public class BlueJavaWHRegionals extends Robot {
         secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.7);
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
 
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
+        //firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.5);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
 
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
+        //secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.5);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.5);
 
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
+        //thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.5);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.5);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
-        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, -0.5);
-
-        //this path goes to the carousel
+        wareHousePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 16, -0.5);
+        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 34, -0.5);
 
 
     }

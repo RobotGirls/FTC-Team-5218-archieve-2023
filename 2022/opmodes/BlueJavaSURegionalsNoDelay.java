@@ -35,6 +35,7 @@ package opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -48,11 +49,12 @@ import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
+import team25core.TouchSensorCriteria;
 
 
-@Autonomous(name = "JavabotsLM2AutoWH")
+@Autonomous(name = "SUBlueRegionalsJavaNoDelay")
 //@Disabled
-public class JavaLM2AutoWarehouse extends Robot {
+public class BlueJavaSURegionalsNoDelay extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -65,6 +67,7 @@ public class JavaLM2AutoWarehouse extends Robot {
     private OneWheelDirectDrivetrain intakeMotorDrivetrain;
     private DcMotor liftMotor;
     private DcMotor intakeMotor;
+    private String  tierLevel = "unknownTier";
 
     private FourWheelDirectDrivetrain drivetrain;
 
@@ -72,43 +75,49 @@ public class JavaLM2AutoWarehouse extends Robot {
     private Telemetry.Item positionTlm;
     private Telemetry.Item objectDetectedTlm;
     private Telemetry.Item imageTlm;
-    private double objectConfidence;
+    private Telemetry.Item whereAmI;
 
     private Telemetry.Item objectWidth1Tlm;
     private Telemetry.Item objectWidth2Tlm;
 
     private Telemetry.Item confidenceTlm;
+    private double objectConfidence;
     private Telemetry.Item confidence2Tlm;
     private Telemetry.Item numObjectsTlm;
 
     private double objectLeft;
     private double objectMidpoint;
-    private double imageWidth;
-
-    private double elementPosition;
-
-    ObjectDetectionTask elementDetectionTask;
-    ObjectImageInfo objectImageInfo;
-
-    private int numObjects;
-
-//    DeadReckonPath firstPath;
-//    DeadReckonPath secondPath;
-//    DeadReckonPath carouselPath;
-
     private double firstMidpoint;
     private double randomizedMidpoint;
     private boolean first = true;
     private double objectWidth;
+    private double imageWidth;
 
+    private double elementPosition;
+
+    private int numObjects;
+
+    ObjectDetectionTask elementDetectionTask;
+    ObjectImageInfo objectImageInfo;
+
+    //sensors
+    private TouchSensor touchCarousel;
+    private TouchSensorCriteria touchCarouselCriteria;
+
+    DeadReckonPath pathForTier1;
+    DeadReckonPath pathForTier2;
+    DeadReckonPath pathForTier3;
+    DeadReckonPath secondPath;
+    DeadReckonPath carouselPath;
     DeadReckonPath initialLiftPath;
     DeadReckonPath initialPath;
-    DeadReckonPath shippingPath;
+    DeadReckonPath firstTierPath;
+    DeadReckonPath secondTierPath;
+    DeadReckonPath thirdTierPath;
     DeadReckonPath firstTierLiftPath;
     DeadReckonPath secondTierLiftPath;
     DeadReckonPath thirdTierLiftPath;
     DeadReckonPath intakePath;
-    DeadReckonPath wareHousePath;
 
     /*
      * The default event handler for the robot.
@@ -133,7 +142,7 @@ public class JavaLM2AutoWarehouse extends Robot {
                 objectLeft = event.objects.get(0).getLeft();
                 objectMidpoint = (event.objects.get(0).getWidth()/2.0) + objectLeft;
                 imageWidth = event.objects.get(0).getImageWidth();
-                //whereAmI.setValue("in handleEvent");
+                whereAmI.setValue("in handleEvent");
                 objectConfidence = event.objects.get(0).getConfidence();
                 confidenceTlm.setValue(objectConfidence);
                 if (event.kind == EventKind.OBJECTS_DETECTED){
@@ -167,7 +176,7 @@ public class JavaLM2AutoWarehouse extends Robot {
                                 }
                                 currentLocationTlm.setValue(randomizedMidpoint);
                                 elementPosition = randomizedMidpoint;
-                                //whereAmI.setValue("more than one object detected");
+                                whereAmI.setValue("more than one object detected");
                             }
                         }
                     } else {
@@ -176,12 +185,12 @@ public class JavaLM2AutoWarehouse extends Robot {
                         objectDetectedTlm.setValue(event.objects.get(0).getLabel());
                         currentLocationTlm.setValue(objectMidpoint);
                         elementPosition = objectMidpoint;
-                        //whereAmI.setValue("one object detected");
+                        whereAmI.setValue("one object detected");
                     }
                 }
             }
         };
-        //whereAmI.setValue("setObjectDetection");
+        whereAmI.setValue("setObjectDetection");
         elementDetectionTask.rateLimit(1000);
         elementDetectionTask.init(telemetry, hardwareMap);
         elementDetectionTask.setDetectionKind(ObjectDetectionTask.DetectionKind.EVERYTHING);
@@ -195,26 +204,32 @@ public class JavaLM2AutoWarehouse extends Robot {
                 SingleShotTimerEvent event = (SingleShotTimerEvent) e;
                 switch(event.kind) {
                     case EXPIRED:
-                        initialLift();
+                        initialLift(elementPosition);
                         break;
                 }
             }
         });
     }
 
-    public void initialLift()
+    public void initialLift(double elementPosition)
     {
-        this.addTask(new DeadReckonTask(this, initialLiftPath, liftMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("lifted to second tier");
-                    goToShippingHub(elementPosition);
-                }
-            }
-        });
+        whereAmI.setValue("in initialLift");
+        if (elementPosition < 250) {
+            whereAmI.setValue("first tier");
+            tierLevel = "tier1";
+            liftToFirstTier();
+            positionTlm.setValue("Detected in First Position");
+        }else if (elementPosition < 450){
+            whereAmI.setValue("second tier");
+            tierLevel = "tier2";
+            liftToSecondTier();
+            positionTlm.setValue("Detected in Second Position");
+        }else if (elementPosition < 800){
+            whereAmI.setValue("third tier");
+            tierLevel = "tier3";
+            liftToThirdTier();
+            positionTlm.setValue("Detected in Third Position");
+        }
     }
 
 //    public void initialJump()
@@ -241,7 +256,7 @@ public class JavaLM2AutoWarehouse extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to first tier");
-                    depositInTier();
+                    goToFirstTier();
                 }
             }
         });
@@ -256,7 +271,7 @@ public class JavaLM2AutoWarehouse extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to second tier");
-                    depositInTier();
+                    goToSecondTier();
                 }
             }
         });
@@ -271,7 +286,7 @@ public class JavaLM2AutoWarehouse extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("lifted to third tier");
-                    depositInTier();
+                    goToThirdTier();
                 }
             }
         });
@@ -286,28 +301,60 @@ public class JavaLM2AutoWarehouse extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("deposited into tier");
-                   parkInWarehouse();
+                    whereAmI.setValue("depositInTier");
+                    if (tierLevel == "tier1") {
+                        goToCarousel(pathForTier1);
+                    } else if (tierLevel == "tier2") {
+                        goToCarousel(pathForTier2);
+                    } else {
+                        goToCarousel(pathForTier3);
+
+                    }
                 }
             }
         });
     }
 
-    public void goToShippingHub(double position)
+    public void goToFirstTier()
     {
-        this.addTask(new DeadReckonTask(this, shippingPath, drivetrain){
+        this.addTask(new DeadReckonTask(this, firstTierPath, drivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("went to shipping hub");
-                    if (position < 250) {
-                        liftToFirstTier();
-                    }else if (position < 450){
-                        liftToSecondTier();
-                    }else if (position < 800){
-                        liftToThirdTier();
-                    }
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void goToSecondTier()
+    {
+        this.addTask(new DeadReckonTask(this, secondTierPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
+                }
+            }
+        });
+    }
+
+    public void goToThirdTier()
+    {
+        this.addTask(new DeadReckonTask(this, thirdTierPath, drivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("went to shipping hub first tier");
+                    depositInTier();
                 }
             }
         });
@@ -315,45 +362,139 @@ public class JavaLM2AutoWarehouse extends Robot {
 
     public void initPaths()
     {
+        pathForTier1 = new DeadReckonPath();
+        pathForTier2 = new DeadReckonPath();
+        pathForTier3 = new DeadReckonPath();
+        secondPath = new DeadReckonPath();
+        carouselPath = new DeadReckonPath();
         initialPath = new DeadReckonPath();
         initialLiftPath = new DeadReckonPath();
-        shippingPath = new DeadReckonPath();
+        firstTierPath = new DeadReckonPath();
+        secondTierPath = new DeadReckonPath();
+        thirdTierPath = new DeadReckonPath();
+        firstTierLiftPath = new DeadReckonPath();
+        secondTierLiftPath = new DeadReckonPath();
         thirdTierLiftPath = new DeadReckonPath();
         intakePath = new DeadReckonPath();
-        wareHousePath = new DeadReckonPath();
 
+        pathForTier1.stop();
+        pathForTier2.stop();
+        pathForTier3.stop();
+        secondPath.stop();
+        carouselPath.stop();
         initialPath.stop();
         initialLiftPath.stop();
-        shippingPath.stop();
+        firstTierPath.stop();
+        secondTierPath.stop();
+        thirdTierPath.stop();
+        firstTierLiftPath.stop();
+        secondTierLiftPath.stop();
         thirdTierLiftPath.stop();
         intakePath.stop();
-        wareHousePath.stop();
 
-        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, -0.5);
+        whereAmI.setValue("init paths beginning");
+        //this goes to shipping hub
 
-        initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
+        // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
-        initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
+//        initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
 
-        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 11, 0.3);
-        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.5, 0.3);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.8);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 18, -0.8);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.8);
 
-        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 50, -0.2);
+        //to shipping hub
+        firstTierPath.addSegment(DeadReckonPath .SegmentType.STRAIGHT, 3, 0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.4, -0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
 
-        intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 1);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.7);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13, -0.7);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.7);
+
+        //top
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13, -0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, 0.6);
+
+        intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
+
+        //this path goes to the carousel
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.7);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.TURN, 33, -0.5);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, -0.7);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.TURN, 34, -0.5);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+
+        //top
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.5);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 31.5,  -0.6);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+
+        //spin
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 85, -0.8);
+
+        //park
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.7);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 0.5, -0.5);
+
+        whereAmI.setValue("init paths end");
+
     }
 
-
-
-    public void parkInWarehouse()
+    public void goToCarousel(DeadReckonPath pathForTier)
     {
-        this.addTask(new DeadReckonTask(this, wareHousePath, drivetrain){
+        this.addTask(new DeadReckonTask(this, pathForTier, drivetrain, touchCarouselCriteria){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                switch (path.kind )
+                {
+                    case PATH_DONE:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        break;
+                    case SENSOR_SATISFIED:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        this.disableSensors();
+                        break;
+                }
+            }
+        });
+    }
+
+    public void spinCarousel()
+    {
+        this.addTask(new DeadReckonTask(this, carouselPath, singleMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("spun carousel");
+                    whereAmI.setValue("spinCarousel");
+                    parkInStorageUnit();
+                }
+            }
+        });
+    }
+
+    public void parkInStorageUnit()
+    {
+        this.addTask(new DeadReckonTask(this, secondPath, drivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("parked in storage unit");
+                    whereAmI.setValue("parkInStorageUnit");
                 }
             }
         });
@@ -384,6 +525,11 @@ public class JavaLM2AutoWarehouse extends Robot {
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         singleMotorDrivetrain = new OneWheelDirectDrivetrain(carouselMech);
         singleMotorDrivetrain.resetEncoders();
         singleMotorDrivetrain.encodersOn();
@@ -396,14 +542,28 @@ public class JavaLM2AutoWarehouse extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
+        //sensors
+        touchCarousel = hardwareMap.get(TouchSensor.class, "touchCarousel");
+        touchCarouselCriteria = new TouchSensorCriteria(touchCarousel);
+
         objectImageInfo = new ObjectImageInfo();
         objectImageInfo.displayTelemetry(this.telemetry);
 
         objectDetectedTlm = telemetry.addData("Object detected","unknown");
-        currentLocationTlm = telemetry.addData("Current location",-1);
+        currentLocationTlm = telemetry.addData("Current location",600); //Go to top tier
         imageTlm = telemetry.addData("Image Width",-1);
 
         positionTlm = telemetry.addData("Position:","unknown");
+
+        whereAmI = telemetry.addData("location in code", "init");
+
+        confidenceTlm = telemetry.addData("confidence", "none");
+        confidence2Tlm = telemetry.addData("confidence2", "none");
+
+        numObjectsTlm = telemetry.addData("numObjectsDetected", "none");
+
+        objectWidth1Tlm = telemetry.addData("object1Width", "none");
+        objectWidth2Tlm = telemetry.addData("object2Width", "none");
 
         initPaths();
 
@@ -414,14 +574,10 @@ public class JavaLM2AutoWarehouse extends Robot {
     @Override
     public void start()
     {
-        initialLift();
+        whereAmI.setValue("in Start");
+        //addTask(elementDetectionTask);
+        delay(10);
+        //initialLift(elementPosition);
 
-        if (elementPosition < 250) {
-            positionTlm.setValue("Detected in First Position");
-        }else if (elementPosition < 450){
-            positionTlm.setValue("Detected in Second Position");
-        }else if (elementPosition < 800){
-            positionTlm.setValue("Detected in Third Position");
-        }
     }
 }

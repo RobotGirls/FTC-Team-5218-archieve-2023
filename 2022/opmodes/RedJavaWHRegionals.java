@@ -378,6 +378,7 @@ public class RedJavaWHRegionals extends Robot {
         secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.7);
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
 
+        //btm
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
@@ -386,9 +387,10 @@ public class RedJavaWHRegionals extends Robot {
         secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
 
+        //TOP
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.5);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
