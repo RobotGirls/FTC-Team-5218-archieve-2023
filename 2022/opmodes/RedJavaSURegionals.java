@@ -37,6 +37,7 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -50,6 +51,7 @@ import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
+import team25core.TouchSensorCriteria;
 
 
 @Autonomous(name = "SURedRegionalsJavaDelay")
@@ -98,6 +100,11 @@ public class RedJavaSURegionals extends Robot {
 
     ObjectDetectionTask elementDetectionTask;
     ObjectImageInfo objectImageInfo;
+
+    private TouchSensor touchCarousel;
+    private TouchSensorCriteria touchCarouselCriteria;
+
+    private Telemetry.Item touchSensorTlm;
 
     DeadReckonPath firstPath;
     DeadReckonPath secondPath;
@@ -280,21 +287,6 @@ public class RedJavaSURegionals extends Robot {
     }
 
 
-    public void depositInTier()
-    {
-        this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("deposited into tier");
-                    goToCarousel();
-                }
-            }
-        });
-    }
-
     public void goToFirstTier()
     {
         this.addTask(new DeadReckonTask(this, firstTierPath, drivetrain){
@@ -340,6 +332,21 @@ public class RedJavaSURegionals extends Robot {
         });
     }
 
+    public void depositInTier()
+    {
+        this.addTask(new DeadReckonTask(this, intakePath, intakeMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("deposited into tier");
+                    goToCarousel(firstPath);
+                }
+            }
+        });
+    }
+
     public void initPaths()
     {
         firstPath = new DeadReckonPath();
@@ -378,46 +385,58 @@ public class RedJavaSURegionals extends Robot {
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
 
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.7);
-        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.7);
-        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.8);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.8);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.8);
 
+        //bottom
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.6);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.6);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.6);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.6);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.5, 0.6);
 
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.6);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.6);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.6);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.75);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.4);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.75);
 
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.6);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.6);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.6);
+        //TOP
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.65);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14.25, 0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.5, 0.6);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
         //this path goes to the carousel
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, -0.6);
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 30, -0.6);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.6);
+        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15.5, -0.6);
+        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 32, -0.4);
+//        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.6);
 
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, 0.75);
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 80, 0.8);
 
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 7, 0.6);
-        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.6);
+//        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 7, 0.6);
+        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.7);
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5, -0.6);
+
+
 
     }
 
-    public void goToCarousel()
+    public void goToCarousel(DeadReckonPath firstPath)
     {
-        this.addTask(new DeadReckonTask(this, firstPath, drivetrain){
-            @Override
+        this.addTask(new DeadReckonTask(this, firstPath, drivetrain, touchCarouselCriteria){
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
+                switch (path.kind )
                 {
-                    RobotLog.i("went forward to carousel");
-                    spinCarousel();
+                    case PATH_DONE:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        break;
+                    case SENSOR_SATISFIED:
+                        RobotLog.i("went forward to carousel");
+                        spinCarousel();
+                        touchSensorTlm.setValue("pressed");
+                        this.disableSensors();
+                        break;
                 }
             }
         });
@@ -494,6 +513,10 @@ public class RedJavaSURegionals extends Robot {
         intakeMotorDrivetrain.resetEncoders();
         intakeMotorDrivetrain.encodersOn();
 
+        //sensors
+        touchCarousel = hardwareMap.get(TouchSensor.class, "touchCarousel");
+        touchCarouselCriteria = new TouchSensorCriteria(touchCarousel);
+
         objectImageInfo = new ObjectImageInfo();
         objectImageInfo.displayTelemetry(this.telemetry);
 
@@ -513,6 +536,9 @@ public class RedJavaSURegionals extends Robot {
         objectWidth1Tlm = telemetry.addData("object1Width", "none");
         objectWidth2Tlm = telemetry.addData("object2Width", "none");
 
+        touchSensorTlm = telemetry.addData("touch sensor", "not pressed");
+
+
         initPaths();
 
         setObjectDetection();
@@ -523,6 +549,7 @@ public class RedJavaSURegionals extends Robot {
     public void start()
     {
         delay(10);
+       //goToCarousel(firstPath);
         //initialLift(elementPosition);
 
     }
