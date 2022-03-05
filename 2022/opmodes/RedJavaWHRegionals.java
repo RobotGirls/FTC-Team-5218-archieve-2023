@@ -281,7 +281,6 @@ public class RedJavaWHRegionals extends Robot {
         });
     }
 
-
     public void goToFirstTier()
     {
         this.addTask(new DeadReckonTask(this, firstTierPath, drivetrain){
@@ -353,6 +352,7 @@ public class RedJavaWHRegionals extends Robot {
         secondTierLiftPath = new DeadReckonPath();
         thirdTierLiftPath = new DeadReckonPath();
         intakePath = new DeadReckonPath();
+        wareHousePath = new DeadReckonPath();
 
         initialPath.stop();
         initialLiftPath.stop();
@@ -363,6 +363,7 @@ public class RedJavaWHRegionals extends Robot {
         secondTierLiftPath.stop();
         thirdTierLiftPath.stop();
         intakePath.stop();
+        wareHousePath.stop();
 
         // initialPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.3);
 
@@ -378,21 +379,22 @@ public class RedJavaWHRegionals extends Robot {
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
 
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, -0.5);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
 
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, -0.5);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5);
 
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, -0.5);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, -0.5);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, -0.5);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, 0.5);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
         //goes to warehouse
-        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, -0.5);
+        wareHousePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -0.5);
+        wareHousePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 40, 0.5);
 
     }
 
