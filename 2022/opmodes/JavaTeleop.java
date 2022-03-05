@@ -112,8 +112,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
 
-        liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -0.7, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
-        liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 0.7, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
+        liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
+        liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
         intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
         outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
     }
@@ -141,7 +141,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
                             currentlySlow = true;
                         }
                         break;
-
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
@@ -152,7 +151,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //Gamepad 2
         this.addTask(liftMotorUpTask);
         this.addTask(liftMotorDownTask);
-        this.addTask(intakeTask);
+          this.addTask(intakeTask);
         this.addTask(outtakeTask);
 
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
@@ -164,7 +163,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_X_DOWN:
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.FORWARD);
-                        carouselMech.setPower(0.8);
+                        carouselMech.setPower(1.0);
                         break;
                     case BUTTON_X_UP:
                     case BUTTON_Y_UP:
@@ -174,7 +173,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     case BUTTON_Y_DOWN:
                         //enable carouselMech
                         carouselMech.setDirection(DcMotorSimple.Direction.REVERSE);
-                        carouselMech.setPower(0.8);
+                        carouselMech.setPower(1.0);
                         break;
                     default:
                         buttonTlm.setValue("Not Moving");
