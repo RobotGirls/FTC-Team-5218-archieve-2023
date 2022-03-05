@@ -100,6 +100,7 @@ public class BlueJavaSURegionals extends Robot {
     ObjectDetectionTask elementDetectionTask;
     ObjectImageInfo objectImageInfo;
 
+    //sensors
     private TouchSensor touchCarousel;
     private TouchSensorCriteria touchCarouselCriteria;
 
@@ -398,43 +399,48 @@ public class BlueJavaSURegionals extends Robot {
 
 //        initialLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.2);
 
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.7);
-        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 18, -0.7);
-        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.8);
+        secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 18, -0.8);
+        thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.8);
 
+        //to shipping hub
         firstTierPath.addSegment(DeadReckonPath .SegmentType.STRAIGHT, 3, 0.5);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.4, -0.5);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.47, 0.5);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
 
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.5, -0.5);
-        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.3, 0.5);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.7);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13, -0.7);
+        secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.7);
 
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.5);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13.7, -0.5);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.99, 0.5);
+        //top
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13, -0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, 0.6);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
         //this path goes to the carousel
-        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-        pathForTier1.addSegment(DeadReckonPath.SegmentType.TURN, 36, -0.3);
-        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
-        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.7);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.TURN, 33, -0.5);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
 
-        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-        pathForTier2.addSegment(DeadReckonPath.SegmentType.TURN, 36, -0.3);
-        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
-        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, -0.7);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.TURN, 34, -0.5);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
 
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.5);
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 36,  -0.3);
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.5);
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.5);
+        //top
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.5);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 31.5,  -0.6);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
 
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 90, -0.75);
+        //spin
+        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 85, -0.8);
 
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, 0.5);
+        //park
+        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.7);
         secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 0.5, -0.5);
 
         whereAmI.setValue("init paths end");
