@@ -392,16 +392,16 @@ public class RedJavaSURegionals extends Robot {
         //bottom
         firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.6);
         firstTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.6);
-        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.5, 0.6);
+        firstTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9.4, 0.6);
 
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.75);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14, 0.4);
         secondTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.75);
 
         //TOP
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.65);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14.25, 0.6);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8.5, 0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.75);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 14.7, 0.4);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.75);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 

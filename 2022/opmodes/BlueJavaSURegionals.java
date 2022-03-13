@@ -415,7 +415,7 @@ public class BlueJavaSURegionals extends Robot {
         //top
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, 0.6);
         thirdTierPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 13, -0.6);
-        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, 0.6);
+        thirdTierPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.5, 0.6);
 
         intakePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -1);
 
@@ -423,18 +423,18 @@ public class BlueJavaSURegionals extends Robot {
         pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.7);
         pathForTier1.addSegment(DeadReckonPath.SegmentType.TURN, 33, -0.5);
         pathForTier1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
-        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+        pathForTier1.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, -0.3);
 
         pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.5, -0.7);
         pathForTier2.addSegment(DeadReckonPath.SegmentType.TURN, 34, -0.5);
         pathForTier2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
-        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+        pathForTier2.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, -0.3);
 
         //top
         pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4.5, -0.5);
         pathForTier3.addSegment(DeadReckonPath.SegmentType.TURN, 31.5,  -0.6);
         pathForTier3.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -0.7);
-        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, -0.3);
+        pathForTier3.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 12, -0.3);
 
         //spin
         carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 85, -0.8);

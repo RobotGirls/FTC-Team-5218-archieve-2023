@@ -372,7 +372,7 @@ public class BlueJavaWHRegionals extends Robot {
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 16, 0.3);
 //        shippingPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10.3, 0.3);
 
-        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.7);
+        firstTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -0.7); //distance 5
         secondTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.7);
         thirdTierLiftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 41, -0.7);
 
