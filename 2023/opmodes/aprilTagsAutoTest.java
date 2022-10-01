@@ -39,8 +39,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.openftc.apriltag.AprilTagDetection;
 
-import team25core.AprilTagDetectionTask;
-import team25core.AprilTagDetectionTask;
+import team25core.vision.apriltags.AprilTagDetectionTask;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
@@ -53,7 +52,7 @@ import team25core.SingleShotTimerTask;
 
 @Autonomous(name = "aprilTagsAuto")
 //@Disabled
-public class aprilTagsAuto extends Robot {
+public class aprilTagsAutoTest extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
