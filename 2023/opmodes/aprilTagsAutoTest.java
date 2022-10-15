@@ -165,19 +165,19 @@ public class aprilTagsAutoTest extends Robot {
     @Override
     public void init()
     {
-//        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-//        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-//        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-//        backRight = hardwareMap.get(DcMotor.class, "backRight");
-//
-//        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//
-//        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
-//        drivetrain.resetEncoders();
-//        drivetrain.encodersOn();
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
+        drivetrain.resetEncoders();
+        drivetrain.encodersOn();
 
         whereAmI = telemetry.addData("location in code", "init");
         tagIdTlm = telemetry.addData("tagId","none");
