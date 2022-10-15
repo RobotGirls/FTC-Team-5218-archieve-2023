@@ -66,9 +66,15 @@ public class aprilTagsAutoTest extends Robot {
 
     private FourWheelDirectDrivetrain drivetrain;
 
-    DeadReckonPath firstPath;
-    DeadReckonPath secondPath;
-    DeadReckonPath carouselPath;
+    private DeadReckonPath leftPath;
+    private DeadReckonPath middlePath;
+    private DeadReckonPath rightPath;
+
+    static final int SIGNAL_LEFT = 5;
+    static final int SIGNAL_MIDDLE = 2;
+    static final int SIGNAL_RIGHT = 18;
+    static final double FORWARD_DISTANCE = 6;
+    static final double DRIVE_SPEED = -0.5;
 
     private Telemetry.Item tagIdTlm;
 
@@ -101,28 +107,59 @@ public class aprilTagsAutoTest extends Robot {
                tagObject = event.tagObject;
                tagIdTlm.setValue(tagObject.id);
                 whereAmI.setValue("in handleEvent");
+                if (tagObject.id == SIGNAL_LEFT){
+                    driveToSignalZone(leftPath);
+                } else if (tagObject.id == SIGNAL_MIDDLE){
+                    driveToSignalZone(middlePath);
+                } else {
+                    driveToSignalZone(rightPath);
+                }
             }
         };
         whereAmI.setValue("setAprilTagDetection");
         detectionTask.init(telemetry, hardwareMap);
     }
 
+    public void driveToSignalZone(DeadReckonPath signalPath)
+    {
+        whereAmI.setValue("in driveToSignalZone");
+        RobotLog.i("drives straight onto the launch line");
+
+
+        //starts when you have stone and want to move
+        this.addTask(new DeadReckonTask(this, signalPath, drivetrain){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+
+                }
+            }
+        });
+    }
+
+
     public void initPaths()
     {
-        firstPath = new DeadReckonPath();
-        secondPath = new DeadReckonPath();
-        carouselPath = new DeadReckonPath();
+        leftPath = new DeadReckonPath();
+        middlePath = new DeadReckonPath();
+        rightPath= new DeadReckonPath();
 
-        firstPath.stop();
-        secondPath.stop();
-        carouselPath.stop();
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1, -0.3); // comes off the wall
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, -0.3);
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 20, 0.3);
-        secondPath.addSegment(DeadReckonPath.SegmentType.TURN, 15, -0.3);
-        secondPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, -0.5);
-        carouselPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, -0.2);
+        leftPath.stop();
+        middlePath.stop();
+        rightPath.stop();
+
+        //going forward then to the left
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, FORWARD_DISTANCE, -DRIVE_SPEED);
+        //going forward
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
+        //going forward then right
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,FORWARD_DISTANCE,DRIVE_SPEED);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,FORWARD_DISTANCE,DRIVE_SPEED);
     }
 
     @Override
@@ -152,8 +189,9 @@ public class aprilTagsAutoTest extends Robot {
     @Override
     public void start()
     {
+        driveToSignalZone(rightPath);
         whereAmI.setValue("in Start");
         setAprilTagDetection();
-        addTask(detectionTask);
+//        addTask(detectionTask);
     }
 }
