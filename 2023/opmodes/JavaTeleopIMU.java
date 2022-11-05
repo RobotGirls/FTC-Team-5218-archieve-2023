@@ -130,7 +130,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
 
-        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1);
+        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
         drivetrain.setCanonicalMotorDirection();
         // Note we are swapping the rights and lefts in the arguments below
