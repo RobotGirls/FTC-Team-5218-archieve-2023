@@ -35,31 +35,29 @@ package opmodes;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
+import java.util.Locale;
 
 import team25core.DeadmanMotorTask;
 import team25core.GamepadTask;
 import team25core.MechanumGearedDrivetrain;
-import team25core.OneWheelDirectDrivetrain;
-import team25core.Robot;
 import team25core.RobotEvent;
-import team25core.RunToEncoderValueTask;
-import team25core.SingleShotTimerTask;
 import team25core.StandardFourMotorRobot;
-import team25core.TankMechanumControlScheme;
 import team25core.TankMechanumControlSchemeReverse;
 import team25core.TeleopDriveTask;
 
-@TeleOp(name = "JavaTeleop")
+@TeleOp(name = "JavaTeleopIMU")
 //@Disabled
-public class JavaTeleop extends StandardFourMotorRobot {
+public class JavaTeleopIMU extends StandardFourMotorRobot {
 
 
     private TeleopDriveTask drivetask;
@@ -78,6 +76,10 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private static final int ARM_CLOSE =0;
 
     private BNO055IMU imu;
+
+    //new
+    private Orientation angles;
+    private Acceleration gravity;
 
     private DcMotor liftMotor;
     // private DcMotor intakeMotor;
@@ -107,6 +109,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
     public void init() {
 
         super.init();
+        initIMU();
+
+        scheme = new MecanumFieldCentricDriveScheme(gamepad1,imu, this.telemetry);
+
+
+
 
         //mechanisms
 //        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
@@ -136,6 +144,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         // Note we are swapping the rights and lefts in the arguments below
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
+
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
 
         liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
@@ -150,11 +159,42 @@ public class JavaTeleop extends StandardFourMotorRobot {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES; //changed from Radians
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;//New
         // Without this, data retrieving from the IMU throws an exception
+        parameters.mode = BNO055IMU.SensorMode.IMU;//New
+        parameters.loggingEnabled       = true;
+        parameters.useExternalCrystal   = true;
+        parameters.loggingTag           = "IMU";
+
         imu.initialize(parameters);
 
+        angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gravity = imu.getGravity();
+
+        telemetry.addData("Status", imu.getSystemStatus().toString());
+        telemetry.addData("Calib", imu.getCalibrationStatus().toString());
+        telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
+        telemetry.addData("Roll", formatAngle(angles.angleUnit, angles.secondAngle));
+        telemetry.addData("Pitch", formatAngle(angles.angleUnit, angles.thirdAngle));
+        telemetry.addData("Grav", gravity.toString());
+        telemetry.update();
+        telemetry.setMsTransmissionInterval(100);
+
+
     }
+
+    //New
+    String formatAngle(AngleUnit angleUnit, double angle)
+    {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees)
+    {
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
 
     @Override
     public void start() {

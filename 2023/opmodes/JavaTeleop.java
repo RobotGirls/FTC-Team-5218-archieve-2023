@@ -130,7 +130,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
 
-        TankMechanumControlScheme scheme = new TankMechanumControlScheme(gamepad1);
+        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
         drivetrain.setCanonicalMotorDirection();
         // Note we are swapping the rights and lefts in the arguments below
@@ -138,6 +138,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
 
+        //lift motor reset encoder and then check current position to make sure it is not negative (for no over driving)
         liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
         liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
 //        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);

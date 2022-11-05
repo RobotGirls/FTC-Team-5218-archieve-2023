@@ -43,17 +43,17 @@ import org.openftc.apriltag.AprilTagDetection;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.IMUGyroDriveTask;
+import team25core.IMUGyroTask;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.vision.apriltags.AprilTagDetectionTask;
-import team25core.IMUGyroTask;
-import opmodes.VivaldiCalibration;
 
 
-@Autonomous(name = "aprilTagsAutoIMU")
+@Autonomous(name = "aprilTagsAutoFieldCentric")
 //@Disabled
-public class aprilTagsAutoTestIMU extends Robot {
+public class aprilTagsAutoTestFieldCentric extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -81,9 +81,9 @@ public class aprilTagsAutoTestIMU extends Robot {
 
     private Telemetry.Item whereAmI;
 
-    BNO055IMU imu;
+    private BNO055IMU imu;
     private Telemetry.Item gyroItem;
-    private IMUGyroTask gyroTask;
+    private IMUGyroDriveTask gyroTask;
 
     /*
      * The default event handler for the robot.
@@ -144,7 +144,7 @@ public class aprilTagsAutoTestIMU extends Robot {
 
     public void handleGyroEvent ()
     {
-        gyroTask = new IMUGyroTask(this, imu, 0, true) {
+        gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
             @Override
             public void handleEvent (RobotEvent event) {
                 if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
@@ -208,6 +208,18 @@ public class aprilTagsAutoTestIMU extends Robot {
 
         handleGyroEvent();
 
+
+    }
+
+    public void initIMU()
+    {
+        // Retrieve the IMU from the hardware map
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        // Technically this is the default, however specifying it is clearer
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        // Without this, data retrieving from the IMU throws an exception
+        imu.initialize(parameters);
 
     }
 

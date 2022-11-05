@@ -44,16 +44,16 @@ import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
 import team25core.IMUGyroDriveTask;
-import team25core.IMUGyroTask;
 import team25core.OneWheelDirectDrivetrain;
+import team25core.PersistentTelemetryTask;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "aprilTagsAutoFieldCentric")
+@Autonomous(name = "IMUDriveAutoTest3")
 //@Disabled
-public class aprilTagsAutoTestFieldCentric extends Robot {
+public class IMUDriveAutoTest extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -71,7 +71,9 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
     static final int SIGNAL_LEFT = 5;
     static final int SIGNAL_MIDDLE = 2;
     static final int SIGNAL_RIGHT = 18;
-    static final double FORWARD_DISTANCE = 6;
+    static final double FORWARD_DISTANCE = 10;
+    static final double TMP_FORWARD_DISTANCE = 150;
+
     static final double DRIVE_SPEED = -0.5;
 
     private Telemetry.Item tagIdTlm;
@@ -82,8 +84,14 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
     private Telemetry.Item whereAmI;
 
     private BNO055IMU imu;
-    private Telemetry.Item gyroItem;
+    private Telemetry.Item gyroItemTlm;
     private IMUGyroDriveTask gyroTask;
+
+    public static final double TURN_SPEED = -0.1;
+
+    private boolean debug = false;
+
+    private Telemetry.Item headingTlm;
 
     /*
      * The default event handler for the robot.
@@ -101,14 +109,18 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
     }
 
     public void setAprilTagDetection() {
-        whereAmI.setValue("before detectionTask");
+        if (debug) {
+            whereAmI.setValue("before detectionTask");
+        }
         detectionTask = new AprilTagDetectionTask(this, "Webcam 1") {
             @Override
             public void handleEvent(RobotEvent e) {
                TagDetectionEvent event = (TagDetectionEvent) e;
                tagObject = event.tagObject;
-               tagIdTlm.setValue(tagObject.id);
-                whereAmI.setValue("in handleEvent");
+               if (debug){
+                   tagIdTlm.setValue(tagObject.id);
+                   whereAmI.setValue("in handleEvent");
+               }
                 if (tagObject.id == SIGNAL_LEFT){
                     driveToSignalZone(leftPath);
                 } else if (tagObject.id == SIGNAL_MIDDLE){
@@ -118,13 +130,17 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
                 }
             }
         };
-        whereAmI.setValue("setAprilTagDetection");
+        if (debug) {
+            whereAmI.setValue("setAprilTagDetection");
+        }
         detectionTask.init(telemetry, hardwareMap);
     }
 
     public void driveToSignalZone(DeadReckonPath signalPath)
     {
-        whereAmI.setValue("in driveToSignalZone");
+        if (debug) {
+            whereAmI.setValue("in driveToSignalZone");
+        }
         RobotLog.i("drives straight onto the launch line");
 
 
@@ -145,13 +161,21 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
     public void handleGyroEvent ()
     {
         gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
+
+        //gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
             @Override
             public void handleEvent (RobotEvent event) {
                 if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
                     drivetrain.stop();
                     driveToSignalZone(middlePath);
+                   if (debug) {
+                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
+                   }
                 } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
-                    drivetrain.turn(VivaldiCalibration.TURN_SPEED / 2);
+                    drivetrain.turn(TURN_SPEED / 2);
+                   if (debug) {
+                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
+                   }
                 }
             }
         };
@@ -174,7 +198,11 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, FORWARD_DISTANCE, -DRIVE_SPEED);
         //going forward
-        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE,DRIVE_SPEED);
+//        middlePath.addSegment(DeadReckonPath.SegmentType.TURN, TMP_FORWARD_DISTANCE,DRIVE_SPEED);
+//        middlePath.addSegment(DeadReckonPath.SegmentType.TURN, TMP_FORWARD_DISTANCE,-DRIVE_SPEED);
+
+
         //going forward then right
         rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,FORWARD_DISTANCE,DRIVE_SPEED);
         rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,FORWARD_DISTANCE,DRIVE_SPEED);
@@ -197,38 +225,47 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
-        whereAmI = telemetry.addData("location in code", "init");
-        tagIdTlm = telemetry.addData("tagId","none");
+
+        if (debug) {
+            whereAmI = telemetry.addData("location in code", "init");
+            tagIdTlm = telemetry.addData("tagId", "none");
+            gyroItemTlm = telemetry.addData("Gyro state:", "Not at target");
+        }
+        //headingTlm = telemetry.addData("Current/target heading is: ", 0.0);
+
         //initPaths();
 
         // initializing mineral detection, marker movement, and IMU
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-        gyroItem = telemetry.addData("Gyro state:", "Not at target");
 
+       // initIMU();
         handleGyroEvent();
 
-
+        initPaths();
     }
 
-    public void initIMU()
-    {
-        // Retrieve the IMU from the hardware map
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        // Without this, data retrieving from the IMU throws an exception
-        imu.initialize(parameters);
-
-    }
+//    public void initIMU()
+//    {
+//        // Retrieve the IMU from the hardware map
+//        imu = hardwareMap.get(BNO055IMU.class, "imu");
+//        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+//        // Technically this is the default, however specifying it is clearer
+//        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+//        // Without this, data retrieving from the IMU throws an exception
+//        imu.initialize(parameters);
+//
+//    }
 
     @Override
     public void start()
     {
-        driveToSignalZone(middlePath);
-        whereAmI.setValue("in Start");
-        setAprilTagDetection();
+        driveToSignalZone(rightPath);
+        addTask(gyroTask);
+       if (debug){
+           whereAmI.setValue("in Start");
+       }
+//        setAprilTagDetection();
 //        addTask(detectionTask);
     }
 }

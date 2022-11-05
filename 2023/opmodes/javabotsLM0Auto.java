@@ -40,6 +40,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.openftc.apriltag.AprilTagDetection;
 
+import team25core.Drivetrain;
 import team25core.vision.apriltags.AprilTagDetectionPipeline;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 import team25core.DeadReckonPath;
@@ -52,7 +53,7 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 
 
-@Autonomous(name = "javabotsLM0Auto")
+@Autonomous(name = "javabotsLM0Auto2")
 //@Disabled
 public class javabotsLM0Auto extends Robot {
 
@@ -61,23 +62,40 @@ public class javabotsLM0Auto extends Robot {
     private DcMotor backLeft;
     private DcMotor backRight;
 
-    private OneWheelDirectDrivetrain singleMotorDrivetrain;
     private FourWheelDirectDrivetrain drivetrain;
 
     private OneWheelDirectDrivetrain liftMotorDrivetrain;
     private DcMotor liftMotor;
 
-    private Servo coneMech;
+    private Servo coneServo;
+    private Servo armServo;
 
-    DeadReckonPath firstPath;
-    DeadReckonPath liftToSmallJunctionPath;
-    DeadReckonPath secondPath;
+    private static final double CONE_RELEASE = 0.9;
+    private static final double CONE_GRAB =0;
 
+    private static final double ARM_OPEN = 1;
+    private static final double ARM_CLOSE =0;
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
 
+    //private DeadReckonPath depositInFirstGroundJunctionPath;
+
+    //private DeadReckonPath initialConeGrabPath;
+
+    static final int SIGNAL_LEFT = 5;
+    static final int SIGNAL_MIDDLE = 2;
+    static final int SIGNAL_RIGHT = 18;
+    static final double FORWARD_DISTANCE = 6;
+    static final double DRIVE_SPEED = -0.5;
+
+    DeadReckonPath ground1Path;
+    DeadReckonPath liftToSmallJunctionPath;
+    DeadReckonPath secondPath;
+
     private Telemetry.Item tagIdTlm;
+
+    private int detectedAprilTagID;
 
     AprilTagDetection tagObject;
     private AprilTagDetectionTask detectionTask;
@@ -101,6 +119,7 @@ public class javabotsLM0Auto extends Robot {
         }
     }
 
+
     public void setAprilTagDetection() {
         whereAmI.setValue("before detectionTask");
         detectionTask = new AprilTagDetectionTask(this, "Webcam 1") {
@@ -110,43 +129,131 @@ public class javabotsLM0Auto extends Robot {
                 tagObject = event.tagObject;
                 tagIdTlm.setValue(tagObject.id);
                 whereAmI.setValue("in handleEvent");
+                detectedAprilTagID = tagObject.id;
             }
         };
         whereAmI.setValue("setAprilTagDetection");
         detectionTask.init(telemetry, hardwareMap);
     }
 
-//    public void liftToDeposit()
-//    {
-//        this.addTask(new DeadReckonTask(this, liftToSmallJunctionPath, liftMotorDrivetrain){
-//            @Override
-//            public void handleEvent (RobotEvent e){
-//                DeadReckonEvent path = (DeadReckonEvent) e;
-//                if (path.kind == EventKind.PATH_DONE)
-//                {
-//                    RobotLog.i("liftedToSmallJunction");
-//                    ...()
-//                }
-//            }
-//        });
-//    }
+
+
+    public void liftToFirstGroundJunction()
+    {
+        this.addTask(new DeadReckonTask(this, liftToSmallJunctionPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("liftedToGroundJunction");
+                 driveToFirstGroundJunction(ground1Path);
+                }
+            }
+        });
+    }
+
+    private void driveToFirstGroundJunction(DeadReckonPath ground1Path)
+    {
+        whereAmI.setValue("in driveToFirstGroundJunction");
+        RobotLog.i("drives to First Ground Junction");
+
+        this.addTask(new DeadReckonTask(this, ground1Path, drivetrain){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+                    coneServo.setPosition(CONE_RELEASE);
+                    //put delay in
+
+                }
+
+            }
+        });
+    }
+
+    public void driveToSignalZone(DeadReckonPath signalPath)
+    {
+        whereAmI.setValue("in driveToSignalZone");
+        RobotLog.i("drives straight onto the launch line");
+
+        this.addTask(new DeadReckonTask(this, signalPath, drivetrain){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+
+                }
+            }
+        });
+    }
+
+    public void delay(int seconds)
+    {
+        this.addTask(new SingleShotTimerTask(this, 1000*seconds) {
+            @Override
+            public void handleEvent (RobotEvent e){
+                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
+                switch(event.kind) {
+                    case EXPIRED:
+                        if (detectedAprilTagID == SIGNAL_LEFT){
+                            driveToSignalZone(leftPath);
+                        } else if (detectedAprilTagID == SIGNAL_MIDDLE){
+                            driveToSignalZone(middlePath);
+                        } else {
+                            driveToSignalZone(rightPath);
+                        }
+                        break;
+                }
+            }
+        });
+    }
+
+
 
     public void initPaths()
     {
-        firstPath = new DeadReckonPath();
-        secondPath = new DeadReckonPath();
 
-        firstPath.stop();
-        secondPath.stop();
+//        secondPath = new DeadReckonPath();
+        ground1Path = new DeadReckonPath();
+        liftToSmallJunctionPath = new DeadReckonPath();
+
+        ground1Path.stop();
+        liftToSmallJunctionPath.stop();
+//        secondPath.stop();
+
+        leftPath = new DeadReckonPath();
+        middlePath = new DeadReckonPath();
+        rightPath= new DeadReckonPath();
 
 
-        firstPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.3);
-        //get of the wall
-        firstPath.addSegment(DeadReckonPath.SegmentType.TURN, 1, -0.3);
-        firstPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 1, -0.3);
+        leftPath.stop();
+        middlePath.stop();
+        rightPath.stop();
+
+        //going forward then to the left
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, FORWARD_DISTANCE, -DRIVE_SPEED);
+        //going forward
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, FORWARD_DISTANCE, DRIVE_SPEED);
+        //going forward then right
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,FORWARD_DISTANCE,DRIVE_SPEED);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,FORWARD_DISTANCE,DRIVE_SPEED);
+
+
+        //drives to first ground junction
+        ground1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3, -0.5);
+        ground1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
+
+        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
+
         //lift path
         // servo path
-        secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
+        //secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
         //driving towards cone stack
         //lift path
         // servo path
@@ -165,24 +272,38 @@ public class javabotsLM0Auto extends Robot {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
+        liftMotor = hardwareMap.get(DcMotor.class, "liftMotor");
+
+        coneServo = hardwareMap.servo.get("coneServo");
+        armServo = hardwareMap.servo.get("armServo");
 
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
+        liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
+        liftMotorDrivetrain.resetEncoders();
+        liftMotorDrivetrain.encodersOn();
+
+        coneServo.setPosition(CONE_GRAB);
+        armServo.setPosition(ARM_CLOSE);
+
         whereAmI = telemetry.addData("location in code", "init");
         tagIdTlm = telemetry.addData("tagId","none");
-        //initPaths();
+        initPaths();
     }
 
     @Override
     public void start()
     {
+        liftToFirstGroundJunction();
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
