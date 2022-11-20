@@ -71,11 +71,14 @@ public class JavaTeleop extends StandardFourMotorRobot {
     //added field centric
 
     private Telemetry.Item buttonTlm;
-    private static final double CONE_GRAB = 0.35;
-    private static final double CONE_RELEASE = 0.6;
+    private Telemetry.Item coneTlm;
+    private static final double CONE_GRAB = 0.2;
+    private static final double CONE_RELEASE = 0.67;
 
     private static final double ARM_FRONT = 0.06;
     private static final double ARM_BACK = 1;
+
+    //arm is 5, cone is 3
 
     private BNO055IMU imu;
 
@@ -132,7 +135,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
-        drivetrain.setCanonicalMotorDirection();
+       // drivetrain.setNoncanonicalMotorDirection();
         // Note we are swapping the rights and lefts in the arguments below
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
@@ -218,6 +221,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
+                    case LEFT_STICK_UP:
+
                 }
             }
         });
