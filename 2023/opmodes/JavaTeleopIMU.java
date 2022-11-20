@@ -69,11 +69,11 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
     //added field centric
 
     private Telemetry.Item buttonTlm;
-    private static final double CONE_OPEN = 0.9;
-    private static final int CONE_CLOSE =0;
+    private static final double CONE_GRAB = 0.2;
+    private static final double CONE_RELEASE = 0.67;
 
-    private static final int ARM_OPEN = 1;
-    private static final int ARM_CLOSE =0;
+    private static final double ARM_FRONT = 0.06;
+    private static final double ARM_BACK = 1;
 
     private BNO055IMU imu;
 
@@ -231,7 +231,6 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         this.addTask(liftMotorDownTask);
 //        this.addTask(intakeTask);
 //        this.addTask(outtakeTask);
-
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
             //@Override
             public void handleEvent(RobotEvent e) {
@@ -241,23 +240,25 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
 
                     case BUTTON_X_DOWN:
                         //position 0
-                        armServo.setPosition(ARM_CLOSE);
+                        armServo.setPosition(ARM_FRONT);
                         break;
                     case BUTTON_B_DOWN:
                         //position 1
-                        armServo.setPosition(ARM_OPEN);
+                        armServo.setPosition(ARM_BACK);
                         break;
                     case BUTTON_A_DOWN:
                         //position 1
-                        coneServo.setPosition(CONE_CLOSE);
+                        coneServo.setPosition(CONE_GRAB);
                         break;
                     case BUTTON_Y_DOWN:
                         //position 0 (original pos)
-                        coneServo.setPosition(CONE_OPEN);
+                        coneServo.setPosition(CONE_RELEASE);
                         break;
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
+                    case LEFT_STICK_UP:
+
                 }
             }
         });
