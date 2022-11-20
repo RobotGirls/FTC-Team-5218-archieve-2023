@@ -40,22 +40,19 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.openftc.apriltag.AprilTagDetection;
 
-import team25core.Drivetrain;
-import team25core.vision.apriltags.AprilTagDetectionPipeline;
-import team25core.vision.apriltags.AprilTagDetectionTask;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
-import team25core.MechanumGearedDrivetrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
+import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsLM0Auto2")
+@Autonomous(name = "javabotsLM1Auto2")
 //@Disabled
-public class javabotsLM0Auto extends Robot {
+public class javabotsLM1Auto extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -79,9 +76,8 @@ public class javabotsLM0Auto extends Robot {
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
 
-    //private DeadReckonPath depositInFirstGroundJunctionPath;
-
-    //private DeadReckonPath initialConeGrabPath;
+    private DeadReckonPath initialConeGrabPath;
+    private DeadReckonPath depositInFirstGroundJunctionPath;
 
     static final int SIGNAL_LEFT = 5;
     static final int SIGNAL_MIDDLE = 2;
@@ -89,7 +85,7 @@ public class javabotsLM0Auto extends Robot {
     static final double FORWARD_DISTANCE = 6;
     static final double DRIVE_SPEED = -0.5;
 
-    DeadReckonPath ground1Path;
+    DeadReckonPath driveToGround1Path;
     DeadReckonPath liftToSmallJunctionPath;
     DeadReckonPath secondPath;
 
@@ -146,13 +142,32 @@ public class javabotsLM0Auto extends Robot {
                 {
                     RobotLog.i("liftedToGroundJunction");
                     delay(1);
-//                 driveToFirstGroundJunction(ground1Path);
+                 driveToFirstGroundJunction(driveToGround1Path);
                 }
             }
         });
     }
 
-//    private void driveToFirstGroundJunction(DeadReckonPath ground1Path)
+    private void driveToFirstGroundJunction(DeadReckonPath driveToGround1Path)
+    {
+        whereAmI.setValue("in driveToFirstGroundJunction");
+        RobotLog.i("drives to First Ground Junction");
+
+        this.addTask(new DeadReckonTask(this, driveToGround1Path, drivetrain){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+                    coneServo.setPosition(CONE_RELEASE);
+                    dropToFirstGroundJunction();
+                }
+            }
+        });
+    }
+
+//    private void lowerToFirstGroundJunction(DeadReckonPath ground1Path)
 //    {
 //        whereAmI.setValue("in driveToFirstGroundJunction");
 //        RobotLog.i("drives to First Ground Junction");
@@ -165,27 +180,26 @@ public class javabotsLM0Auto extends Robot {
 //                {
 //                    RobotLog.i("finished parking");
 //                    coneServo.setPosition(CONE_RELEASE);
-//
-//
+//                    dropToFirstGroundJunction();
 //                }
 //            }
 //        });
 //    }
 
-//    public void dropToFirstGroundJunction()
-//    {
-//        this.addTask(new DeadReckonTask(this, liftToSmallJunctionPath, liftMotorDrivetrain){
-//            @Override
-//            public void handleEvent (RobotEvent e){
-//                DeadReckonEvent path = (DeadReckonEvent) e;
-//                if (path.kind == EventKind.PATH_DONE)
-//                {
-//                    RobotLog.i("liftedToGroundJunction");
-//                    driveToFirstGroundJunction(ground1Path);
-//                }
-//            }
-//        });
-//    }
+    public void dropToFirstGroundJunction()
+    {
+        this.addTask(new DeadReckonTask(this, liftToSmallJunctionPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("liftedToGroundJunction");
+                    driveToFirstGroundJunction(driveToGround1Path);
+                }
+            }
+        });
+    }
 
     public void driveToSignalZone(DeadReckonPath signalPath)
     {
@@ -231,10 +245,10 @@ public class javabotsLM0Auto extends Robot {
     public void initPaths()
     {
 //        secondPath = new DeadReckonPath();
-        ground1Path = new DeadReckonPath();
+        driveToGround1Path = new DeadReckonPath();
         liftToSmallJunctionPath = new DeadReckonPath();
 
-        ground1Path.stop();
+        driveToGround1Path.stop();
         liftToSmallJunctionPath.stop();
 //        secondPath.stop();
 
@@ -247,42 +261,30 @@ public class javabotsLM0Auto extends Robot {
         rightPath.stop();
 
         //drives to first ground junction
-//        ground1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9 , -0.5);
-//        ground1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9 , -0.5);
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
 
+        //lifts to small junction
         liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
 
+        //Based on Signal ID:
         //return to intial to go forward then to the left
-
-//        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-//        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 17, -0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, 0.5);
         //return to intial then go forward
-//        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-//        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3, 0.5);
         middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 17 , 0.5);
         //return to initial then go forward then right
-//        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-//        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, 0.5);
         rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, 0.5);
-
-        //lift path
-        // servo path
-        //secondPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
-        //driving towards cone stack
-        //lift path
-        // servo path
-        //thirdPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, -0.3);
-        //drive back to cone stack
-        //lift path
-        // servo path
-        //fourthPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 15, 0.3);
-        //in position to park in the correct position for the fifth path
     }
 
     @Override
