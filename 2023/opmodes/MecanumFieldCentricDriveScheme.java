@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.JoystickDriveControlScheme;
 import team25core.MotorValues;
+import team25core.TeleopDriveTask;
 
 /**
  * Created by Ruchi Bondre on 9/3/22.
@@ -52,8 +53,12 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
     private Telemetry.Item fRpowerTlm;
     private Telemetry.Item bRpowerTlm;
 
-
-
+    Telemetry.Item imuStatus;
+    Telemetry.Item imuCalib;
+    Telemetry.Item imuHeading;
+    Telemetry.Item imuRoll;
+    Telemetry.Item imuPitch;
+    Telemetry.Item imuGrav;
 
     public MecanumFieldCentricDriveScheme(Gamepad gamepad, BNO055IMU imu,  Telemetry telemetry  )
     {
@@ -65,6 +70,7 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         fRpowerTlm = telemetry.addData("FR Power","unknown");
         bLpowerTlm = telemetry.addData("BL Power","unknown");
         bRpowerTlm = telemetry.addData("BR Power","unknown");
+        this.telemetry = telemetry;
 
     }
 
@@ -76,6 +82,33 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         this.telemetry = telemetry;
     }
 
+
+
+    public void initTelemetry(Telemetry.Item imuStatus, Telemetry.Item imuCalib,
+                              Telemetry.Item imuHeading,Telemetry.Item imuRoll,
+                              Telemetry.Item imuPitch, Telemetry.Item imuGrav)
+    {
+        this.imuStatus = imuStatus;
+        this.imuCalib = imuCalib;
+        this.imuHeading = imuHeading;
+        this.imuRoll = imuRoll;
+        this.imuPitch = imuPitch;
+        this.imuGrav = imuGrav;
+    }
+    public void printIMUInfo(BNO055IMU imu)
+    {
+        // note this would be the heading if the rev hub was mounted
+        // horizontally. Since it is not, we have to figure out what
+        // this really is.
+
+        double heading = -imu.getAngularOrientation().firstAngle;
+        this.imuHeading.setValue(heading);
+        double roll = -imu.getAngularOrientation().secondAngle;
+        this.imuRoll.setValue(roll);
+        double pitch= -imu.getAngularOrientation().thirdAngle;
+        this.imuPitch.setValue(pitch);
+    }
+
     public MotorValues getMotorPowers()
     {
         y = -gamepad.left_stick_y; // Remember, this is reversed!
@@ -84,6 +117,17 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
 
         // If joysticks are pointed left (negative joystick values), counter rotate wheels.
         // Threshold for joystick values in the x may vary.
+
+        // Assuming the Control Hub or the Rev Hub is horizontal:
+        // When we initialize the imu parameters we used AxesOrder.ZYX
+        // So we think that Z is the first angle associated with heading
+        // then Y is probably the second angles and X is probably the
+        // third angle. So we think one of those is pitch and the other
+        // is roll
+        // However, Javabots Rev Hub is mounted Vertically, so we need
+        // to determine which of these axes represents heading
+
+        printIMUInfo(imu);
 
         // Read inverse IMU heading, as the IMU heading is CW positive
         double botHeading = -imu.getAngularOrientation().firstAngle;

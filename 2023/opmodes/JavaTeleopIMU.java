@@ -101,6 +101,13 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
 
     private static final int TICKS_PER_INCH = 79;
 
+    Telemetry.Item imuStatus;
+    Telemetry.Item imuCalib;
+    Telemetry.Item imuHeading;
+    Telemetry.Item imuRoll;
+    Telemetry.Item imuPitch;
+    Telemetry.Item imuGrav;
+
     @Override
     public void handleEvent(RobotEvent e) {
     }
@@ -112,7 +119,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         initIMU();
 
         scheme = new MecanumFieldCentricDriveScheme(gamepad1,imu, this.telemetry);
-
+        scheme.initTelemetry(imuStatus, imuCalib, imuHeading, imuRoll, imuPitch, imuGrav);
 
 
 
@@ -130,17 +137,17 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        coneServo.setPosition(1);
-        armServo.setPosition(0);
+        coneServo.setPosition(0.4);
+        armServo.setPosition(0.06);
 
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
 
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+//        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
-        drivetrain.setCanonicalMotorDirection();
+//        drivetrain.setCanonicalMotorDirection();
         // Note we are swapping the rights and lefts in the arguments below
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
@@ -172,12 +179,14 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         gravity = imu.getGravity();
 
-        telemetry.addData("Status", imu.getSystemStatus().toString());
-        telemetry.addData("Calib", imu.getCalibrationStatus().toString());
-        telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
-        telemetry.addData("Roll", formatAngle(angles.angleUnit, angles.secondAngle));
-        telemetry.addData("Pitch", formatAngle(angles.angleUnit, angles.thirdAngle));
-        telemetry.addData("Grav", gravity.toString());
+
+
+        imuStatus = telemetry.addData("Status", imu.getSystemStatus().toString());
+        imuCalib = telemetry.addData("Calib", imu.getCalibrationStatus().toString());
+        imuHeading = telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
+        imuRoll = telemetry.addData("Roll", formatAngle(angles.angleUnit, angles.secondAngle));
+        imuPitch = telemetry.addData("Pitch", formatAngle(angles.angleUnit, angles.thirdAngle));
+        imuGrav = telemetry.addData("Grav", gravity.toString());
         telemetry.update();
         telemetry.setMsTransmissionInterval(100);
 
@@ -212,7 +221,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
                         // If slow, then normal speed. If fast, then slow speed of motors.
                         //pertains to slowmode
                         if (currentlySlow) {
-                            drivetask.slowDown(1.0);
+                            drivetask.slowDown(0.7);
                             currentlySlow = false;
                         } else {
                             drivetask.slowDown(0.3);
