@@ -43,7 +43,7 @@ import org.openftc.apriltag.AprilTagDetection;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
-import team25core.IMUGyroDriveTask;
+//import team25core.IMUGyroDriveTask;
 import team25core.IMUGyroTask;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
@@ -83,7 +83,7 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
 
     private BNO055IMU imu;
     private Telemetry.Item gyroItem;
-    private IMUGyroDriveTask gyroTask;
+   // private IMUGyroDriveTask gyroTask;
 
     /*
      * The default event handler for the robot.
@@ -144,18 +144,18 @@ public class aprilTagsAutoTestFieldCentric extends Robot {
 
     public void handleGyroEvent ()
     {
-        gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
-            @Override
-            public void handleEvent (RobotEvent event) {
-                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
-                    drivetrain.stop();
-                    driveToSignalZone(middlePath);
-                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
-                    drivetrain.turn(VivaldiCalibration.TURN_SPEED / 2);
-                }
-            }
-        };
-        gyroTask.init();
+//        gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
+//            @Override
+//            public void handleEvent (RobotEvent event) {
+//                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
+//                    drivetrain.stop();
+//                    driveToSignalZone(middlePath);
+//                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
+//                    drivetrain.turn(VivaldiCalibration.TURN_SPEED / 2);
+//                }
+//            }
+//        };
+//        gyroTask.init();
     }
 
 

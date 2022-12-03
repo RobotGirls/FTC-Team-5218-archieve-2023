@@ -43,7 +43,7 @@ import org.openftc.apriltag.AprilTagDetection;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
-import team25core.IMUGyroDriveTask;
+//import team25core.IMUGyroDriveTask;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.PersistentTelemetryTask;
 import team25core.Robot;
@@ -85,7 +85,7 @@ public class IMUDriveAutoTest extends Robot {
 
     private BNO055IMU imu;
     private Telemetry.Item gyroItemTlm;
-    private IMUGyroDriveTask gyroTask;
+    //private IMUGyroDriveTask gyroTask;
 
     public static final double TURN_SPEED = -0.1;
 
@@ -158,29 +158,29 @@ public class IMUDriveAutoTest extends Robot {
         });
     }
 
-    public void handleGyroEvent ()
-    {
-        gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
-
-        //gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
-            @Override
-            public void handleEvent (RobotEvent event) {
-                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
-                    drivetrain.stop();
-                    driveToSignalZone(middlePath);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
-                   }
-                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
-                    drivetrain.turn(TURN_SPEED / 2);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
-                   }
-                }
-            }
-        };
-        gyroTask.init();
-    }
+//    public void handleGyroEvent ()
+//    {
+//      //  gyroTask = new IMUGyroDriveTask(this, imu, 0, true) {
+//
+//        //gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
+//            @Override
+//            public void handleEvent (RobotEvent event) {
+//                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
+//                    drivetrain.stop();
+//                    driveToSignalZone(middlePath);
+//                   if (debug) {
+//                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
+//                   }
+//                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
+//                    drivetrain.turn(TURN_SPEED / 2);
+//                   if (debug) {
+//                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
+//                   }
+//                }
+//            }
+//        };
+//        gyroTask.init();
+//    }
 
 
     public void initPaths()
@@ -240,7 +240,7 @@ public class IMUDriveAutoTest extends Robot {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
        // initIMU();
-        handleGyroEvent();
+       // handleGyroEvent();
 
         initPaths();
     }
@@ -261,7 +261,7 @@ public class IMUDriveAutoTest extends Robot {
     public void start()
     {
         driveToSignalZone(rightPath);
-        addTask(gyroTask);
+       // addTask(gyroTask);
        if (debug){
            whereAmI.setValue("in Start");
        }
