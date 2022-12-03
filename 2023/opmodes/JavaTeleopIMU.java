@@ -69,6 +69,8 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
     //added field centric
 
     private Telemetry.Item buttonTlm;
+    private Telemetry.Item locationTlm;
+
     private static final double CONE_GRAB = 0.2;
     private static final double CONE_RELEASE = 0.67;
 
@@ -120,9 +122,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
 
         scheme = new MecanumFieldCentricDriveScheme(gamepad1,imu, this.telemetry);
         scheme.initTelemetry(imuStatus, imuCalib, imuHeading, imuRoll, imuPitch, imuGrav);
-
-
-
+        scheme.setCanonical(MecanumFieldCentricDriveScheme.MotorDirection.NONCANONICAL);
         //mechanisms
 //        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
@@ -144,6 +144,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
+        locationTlm = telemetry.addData("location","init");
 
 //        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
@@ -155,9 +156,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
 
         liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
-        liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
-//        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
-//        outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
+        liftMotorDownTask = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
     }
 
     public void initIMU()
@@ -166,7 +165,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES; //changed from Radians
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS; //changed back to Radians
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;//New
         // Without this, data retrieving from the IMU throws an exception
         parameters.mode = BNO055IMU.SensorMode.IMU;//New
@@ -179,15 +178,13 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         gravity = imu.getGravity();
 
-
-
         imuStatus = telemetry.addData("Status", imu.getSystemStatus().toString());
         imuCalib = telemetry.addData("Calib", imu.getCalibrationStatus().toString());
         imuHeading = telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
         imuRoll = telemetry.addData("Roll", formatAngle(angles.angleUnit, angles.secondAngle));
         imuPitch = telemetry.addData("Pitch", formatAngle(angles.angleUnit, angles.thirdAngle));
         imuGrav = telemetry.addData("Grav", gravity.toString());
-        telemetry.update();
+//        telemetry.update();
         telemetry.setMsTransmissionInterval(100);
 
 
@@ -210,12 +207,13 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
 
         //Gamepad 1
         this.addTask(drivetask);
+        locationTlm.setValue("in start");
 
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_1) {
             //@Override
             public void handleEvent(RobotEvent e) {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
-
+                locationTlm.setValue("in gamepad1 handler");
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
                         // If slow, then normal speed. If fast, then slow speed of motors.
@@ -244,7 +242,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
             //@Override
             public void handleEvent(RobotEvent e) {
                 GamepadEvent gamepadEvent = (GamepadEvent) e;
-
+                locationTlm.setValue("in gamepad2 handler");
                 switch (gamepadEvent.kind) {
 
                     case BUTTON_X_DOWN:

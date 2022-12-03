@@ -221,8 +221,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
-                    case LEFT_STICK_UP:
-
+//                    case LEFT_STICK_UP:
                 }
             }
         });

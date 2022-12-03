@@ -53,12 +53,22 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
     private Telemetry.Item fRpowerTlm;
     private Telemetry.Item bRpowerTlm;
 
-    Telemetry.Item imuStatus;
-    Telemetry.Item imuCalib;
-    Telemetry.Item imuHeading;
-    Telemetry.Item imuRoll;
-    Telemetry.Item imuPitch;
-    Telemetry.Item imuGrav;
+    private Telemetry.Item imuStatusTlm;
+    private Telemetry.Item imuCalibTlm;
+    private Telemetry.Item imuHeadingTlm;
+    private Telemetry.Item imuRollTlm;
+    private Telemetry.Item imuPitchTlm;
+    private Telemetry.Item imuGravTlm;
+
+
+    private Telemetry.Item xTlm;
+    private Telemetry.Item yTlm;
+    private Telemetry.Item cosBotHeadingTlm;
+    private Telemetry.Item sinBotHeadingTlm;
+    private Telemetry.Item rotXTlm;
+    private Telemetry.Item rotYTlm;
+
+
 
     public MecanumFieldCentricDriveScheme(Gamepad gamepad, BNO055IMU imu,  Telemetry telemetry  )
     {
@@ -70,9 +80,21 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         fRpowerTlm = telemetry.addData("FR Power","unknown");
         bLpowerTlm = telemetry.addData("BL Power","unknown");
         bRpowerTlm = telemetry.addData("BR Power","unknown");
+
+        xTlm = telemetry.addData("x","unknown");
+        yTlm = telemetry.addData("y","unknown");
+        cosBotHeadingTlm = telemetry.addData("cosBotHeading","unknown");
+        sinBotHeadingTlm = telemetry.addData("sinBotHeading","unknown");
+        rotXTlm = telemetry.addData("rotXTlm","unknown");
+        rotYTlm = telemetry.addData("rotYTlm","unknown");
+
+//        imuHeadingTlm = telemetry.addData("Heading","unknown");
+//        imuRollTlm = telemetry.addData("Pitch","unknown");
+//        imuPitchTlm = telemetry.addData("Roll","unknown");
         this.telemetry = telemetry;
 
     }
+
 
     public MecanumFieldCentricDriveScheme(Gamepad gamepad, MotorDirection motorDirection, BNO055IMU imu)
     {
@@ -83,18 +105,24 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
     }
 
 
+    public void setCanonical(MotorDirection direction)
+    {
+        this.motorDirection = direction;
+
+    }
 
     public void initTelemetry(Telemetry.Item imuStatus, Telemetry.Item imuCalib,
                               Telemetry.Item imuHeading,Telemetry.Item imuRoll,
                               Telemetry.Item imuPitch, Telemetry.Item imuGrav)
     {
-        this.imuStatus = imuStatus;
-        this.imuCalib = imuCalib;
-        this.imuHeading = imuHeading;
-        this.imuRoll = imuRoll;
-        this.imuPitch = imuPitch;
-        this.imuGrav = imuGrav;
+        this.imuStatusTlm = imuStatus;
+        this.imuCalibTlm = imuCalib;
+        this.imuHeadingTlm = imuHeading;
+        this.imuRollTlm = imuRoll;
+        this.imuPitchTlm = imuPitch;
+        this.imuGravTlm = imuGrav;
     }
+
     public void printIMUInfo(BNO055IMU imu)
     {
         // note this would be the heading if the rev hub was mounted
@@ -102,18 +130,24 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         // this really is.
 
         double heading = -imu.getAngularOrientation().firstAngle;
-        this.imuHeading.setValue(heading);
+        this.imuHeadingTlm.setValue(heading);
         double roll = -imu.getAngularOrientation().secondAngle;
-        this.imuRoll.setValue(roll);
+        this.imuRollTlm.setValue(roll);
         double pitch= -imu.getAngularOrientation().thirdAngle;
-        this.imuPitch.setValue(pitch);
+        this.imuPitchTlm.setValue(pitch);
     }
 
     public MotorValues getMotorPowers()
     {
-        y = -gamepad.left_stick_y; // Remember, this is reversed!
+        if (this.motorDirection == MotorDirection.CANONICAL ) {
+            y = -gamepad.left_stick_y; // Remember, this is reversed!
+            rx = gamepad.right_stick_x;
+        } else {
+            y = gamepad.left_stick_y; // Remember, this is reversed!
+            rx = - gamepad.right_stick_x;
+        }
         x = gamepad.left_stick_x * 1.1; // Counteract imperfect strafing
-        rx = gamepad.right_stick_x;
+
 
         // If joysticks are pointed left (negative joystick values), counter rotate wheels.
         // Threshold for joystick values in the x may vary.
@@ -127,13 +161,13 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         // However, Javabots Rev Hub is mounted Vertically, so we need
         // to determine which of these axes represents heading
 
-        printIMUInfo(imu);
-
         // Read inverse IMU heading, as the IMU heading is CW positive
         double botHeading = -imu.getAngularOrientation().firstAngle;
 
         double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
         double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+
+        printIMUInfo(imu);
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
@@ -148,6 +182,13 @@ public class MecanumFieldCentricDriveScheme implements JoystickDriveControlSchem
         fRpowerTlm.setValue(frontRightPower);
         bLpowerTlm.setValue(backLeftPower);
         bRpowerTlm.setValue(backRightPower);
+
+        xTlm.setValue(x);
+        yTlm.setValue(y);
+        cosBotHeadingTlm.setValue(Math.cos(botHeading));
+        sinBotHeadingTlm.setValue(Math.sin(botHeading));
+        rotYTlm.setValue(rotY);
+        rotXTlm.setValue(rotX);
 
         return new MotorValues(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
 
