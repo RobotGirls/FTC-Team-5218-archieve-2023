@@ -7,7 +7,7 @@ jobs:
       - name: Checkout terkel
         uses: actions/checkout@v2
         with:
-          repository: cmacfarl/terkel
+          repository: RobotGirls/terkel
           ref: master
           path: ws/terkel
 
@@ -19,8 +19,8 @@ jobs:
       - name: Checkout RC
         uses: actions/checkout@v2
         with:
-          repository: cmacfarl/FtcRobotController
-          ref: master-5218
+          repository: RobotGirls/FtcRobotController
+          ref: master-5218-rr
           path: ws/FtcRobotController
 
       - name: Show dir
@@ -33,4 +33,4 @@ jobs:
         run: pwd
         
       - name: build
-        run: ./ws/FtcRobotController/gradlew --project-dir ./ws/FtcRobotController build
+        run: ./ws/FtcRobotController/gradlew --project-dir ./ws/FtcRobotController assemble
