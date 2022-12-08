@@ -53,7 +53,7 @@ import team25core.TouchSensorCriteria;
 
 
 @Autonomous(name = "SURedRegionalsJavaNoDetection")
-//@Disabled
+@Disabled
 public class RedJavaRegionalsNoDetection extends Robot {
 
     private DcMotor frontLeft;
