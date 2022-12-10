@@ -48,6 +48,7 @@ import team25core.DeadmanMotorTask;
 import team25core.GamepadTask;
 import team25core.MechanumGearedDrivetrain;
 import team25core.OneWheelDirectDrivetrain;
+import team25core.OneWheelDriveTask;
 import team25core.Robot;
 import team25core.RobotEvent;
 import team25core.RunToEncoderValueTask;
@@ -90,8 +91,9 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private boolean currentlySlow = false;
 
-    private DeadmanMotorTask liftMotorUpTask;
-    private DeadmanMotorTask liftMotorDownTask;
+    //private DeadmanMotorTask liftMotorUpTask;
+    //private DeadmanMotorTask liftMotorDownTask;
+    private OneWheelDriveTask liftMotorTask;
 
 //    private DeadmanMotorTask intakeTask;
 //    private DeadmanMotorTask outtakeTask;
@@ -141,8 +143,10 @@ public class JavaTeleop extends StandardFourMotorRobot {
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
 
-        liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
-        liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
+        //liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
+       // liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
+        liftMotorTask = new OneWheelDriveTask(this, liftMotor, false);
+        liftMotorTask.slowDown(false);
 //        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
 //        outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
     }
@@ -190,8 +194,9 @@ public class JavaTeleop extends StandardFourMotorRobot {
         });
 
         //Gamepad 2
-        this.addTask(liftMotorUpTask);
-        this.addTask(liftMotorDownTask);
+        //this.addTask(liftMotorUpTask);
+       // this.addTask(liftMotorDownTask);
+        this.addTask(liftMotorTask);
 //        this.addTask(intakeTask);
 //        this.addTask(outtakeTask);
 

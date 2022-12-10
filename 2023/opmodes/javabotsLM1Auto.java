@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package opmodes;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -50,8 +51,9 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsLM1Auto2")
+@Autonomous(name = "javabotsLM1Auto5")
 //@Disabled
+//@Config
 public class javabotsLM1Auto extends Robot {
 
     private DcMotor frontLeft;
@@ -87,6 +89,7 @@ public class javabotsLM1Auto extends Robot {
 
     DeadReckonPath driveToGround1Path;
     DeadReckonPath liftToSmallJunctionPath;
+    DeadReckonPath dropToSmallJunctionPath;
     DeadReckonPath secondPath;
     DeadReckonPath lowerLiftToGroundJunctionPath;
 
@@ -161,6 +164,7 @@ public class javabotsLM1Auto extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("finished parking");
+
                     dropToFirstGroundJunction();
                 }
             }
@@ -188,15 +192,19 @@ public class javabotsLM1Auto extends Robot {
 
     public void dropToFirstGroundJunction()
     {
+
         this.addTask(new DeadReckonTask(this, lowerLiftToGroundJunctionPath, liftMotorDrivetrain){
+
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("liftedToGroundJunction");
+
                     coneServo.setPosition(CONE_RELEASE);
 //                    driveToFirstGroundJunction(driveToGround1Path);
+
                 }
             }
         });
@@ -248,6 +256,7 @@ public class javabotsLM1Auto extends Robot {
         driveToGround1Path = new DeadReckonPath();
         liftToSmallJunctionPath = new DeadReckonPath();
         lowerLiftToGroundJunctionPath = new DeadReckonPath();
+
         leftPath = new DeadReckonPath();
         middlePath = new DeadReckonPath();
         rightPath= new DeadReckonPath();
@@ -255,6 +264,7 @@ public class javabotsLM1Auto extends Robot {
         driveToGround1Path.stop();
         liftToSmallJunctionPath.stop();
         lowerLiftToGroundJunctionPath.stop();
+
         leftPath.stop();
         middlePath.stop();
         rightPath.stop();
@@ -266,11 +276,13 @@ public class javabotsLM1Auto extends Robot {
         // lifts to small junction
         liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
 
+
         // lowers lift to the Ground Junction
         lowerLiftToGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.5);
 
         // Based on Signal ID:
         // return to initial to go forward then to the left
+
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
