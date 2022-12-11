@@ -91,6 +91,7 @@ public class javabotsLM1Auto extends Robot {
     DeadReckonPath liftToSmallJunctionPath;
     DeadReckonPath dropToSmallJunctionPath;
     DeadReckonPath secondPath;
+    DeadReckonPath lowerLiftToGroundJunctionPath;
 
     private Telemetry.Item tagIdTlm;
 
@@ -163,7 +164,7 @@ public class javabotsLM1Auto extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("finished parking");
-                    //coneServo.setPosition(CONE_RELEASE);
+
                     dropToFirstGroundJunction();
                 }
             }
@@ -191,14 +192,19 @@ public class javabotsLM1Auto extends Robot {
 
     public void dropToFirstGroundJunction()
     {
-        this.addTask(new DeadReckonTask(this, dropToSmallJunctionPath, liftMotorDrivetrain){
+
+        this.addTask(new DeadReckonTask(this, lowerLiftToGroundJunctionPath, liftMotorDrivetrain){
+
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("liftedToGroundJunction");
-                   // driveToFirstGroundJunction(driveToGround1Path);
+
+                    coneServo.setPosition(CONE_RELEASE);
+//                    driveToFirstGroundJunction(driveToGround1Path);
+
                 }
             }
         });
@@ -247,43 +253,47 @@ public class javabotsLM1Auto extends Robot {
 
     public void initPaths()
     {
-//        secondPath = new DeadReckonPath();
         driveToGround1Path = new DeadReckonPath();
         liftToSmallJunctionPath = new DeadReckonPath();
-        dropToSmallJunctionPath = new DeadReckonPath();
+        lowerLiftToGroundJunctionPath = new DeadReckonPath();
 
         leftPath = new DeadReckonPath();
         middlePath = new DeadReckonPath();
         rightPath= new DeadReckonPath();
 
-
         driveToGround1Path.stop();
         liftToSmallJunctionPath.stop();
-        dropToSmallJunctionPath.stop();
+        lowerLiftToGroundJunctionPath.stop();
+
         leftPath.stop();
         middlePath.stop();
         rightPath.stop();
 
-        //drives to first ground junction
+        // drives to first ground junction
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9 , -0.5);
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
 
-        //lifts to small junction
+        // lifts to small junction
         liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
-        dropToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.5);
-        //Based on Signal ID:
-        //return to intial to go forward then to the left
+
+
+        // lowers lift to the Ground Junction
+        lowerLiftToGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.5);
+
+        // Based on Signal ID:
+        // return to initial to go forward then to the left
+
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 17, -0.5);
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, 0.5);
-        //return to intial then go forward
+        // return to initial then go forward
         middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3, 0.5);
         middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 17 , 0.5);
-        //return to initial then go forward then right
+        // return to initial then go forward then right
         rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
         rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
