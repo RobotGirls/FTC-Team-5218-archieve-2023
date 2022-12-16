@@ -167,7 +167,8 @@ public class javabotsLM1Auto extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("finished parking");
-                    delayAndLowerLift(2);
+                    lowerLiftToFirstGroundJunction();
+                    // delayAndLowerLift(2);
 
                 }
             }
@@ -252,17 +253,17 @@ public class javabotsLM1Auto extends Robot {
 
     public void delayAndLowerLift(int seconds)
     {
-        this.addTask(new SingleShotTimerTask(this, 1000*seconds) {
+        addTask(new SingleShotTimerTask(this, 1000*seconds) {
             @Override
-            public void handleEvent (RobotEvent e){
-                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-                lowerLiftToFirstGroundJunction();
-                switch(event.kind) {
-                    case EXPIRED:
+            public void handleEvent (RobotEvent e) {
+//                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
+//                lowerLiftToFirstGroundJunction();
+//                switch(event.kind) {
+//                    case EXPIRED:
                         lowerLiftToFirstGroundJunction();
 
-                        break;
-               }
+                       // break;
+              // }
             }
         });
     }
@@ -292,25 +293,27 @@ public class javabotsLM1Auto extends Robot {
 
         // drives to first ground junction
         // straife to left align with ground junction
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, 0.5);
         // back to align with wall since straife drifts
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,4, -0.5);
         // drive up to ground junction
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
 
         // back away from ground junction
-        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,4, -0.5);
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,6, -0.5);
 
 
         // lifts to small junction
-        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 16, 0.7);
 
 
         // lowers lift to the Ground Junction
-        lowerLiftToGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.5);
+        lowerLiftToGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.6);
 
         // raise lift off the Ground Junction
-        raiseLiftOffGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+        raiseLiftOffGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.65);
 
 
         // Based on Signal ID:
