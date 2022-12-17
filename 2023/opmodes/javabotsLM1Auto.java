@@ -65,6 +65,7 @@ public class javabotsLM1Auto extends Robot {
 
     private OneWheelDirectDrivetrain liftMotorDrivetrain;
     private DcMotor liftMotor;
+    private boolean goingToLowerJunction = true;
 
     private Servo coneServo;
     private Servo armServo;
@@ -155,6 +156,19 @@ public class javabotsLM1Auto extends Robot {
         });
     }
 
+    private void decideWhichSignalWasSeen() {
+
+        if (detectedAprilTagID == SIGNAL_LEFT) {
+            driveToSignalZone(leftPath);
+        } else if (detectedAprilTagID == SIGNAL_MIDDLE) {
+            driveToSignalZone(middlePath);
+        } else {
+            driveToSignalZone(rightPath);
+        }
+
+    }
+
+
     private void driveToFromFirstGroundJunction(DeadReckonPath driveToGround1Path)
     {
         whereAmI.setValue("in driveToFromFirstGroundJunction");
@@ -167,8 +181,15 @@ public class javabotsLM1Auto extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("finished parking");
-                    lowerLiftToFirstGroundJunction();
-                    // delayAndLowerLift(2);
+                    if (goingToLowerJunction) {
+                        lowerLiftToFirstGroundJunction();
+                        goingToLowerJunction = false;
+                    } else {
+                        // have finished backing away from lower junction
+                        decideWhichSignalWasSeen();
+
+                    }
+                    //delayAndLowerLift(2);
 
                 }
             }
@@ -295,18 +316,20 @@ public class javabotsLM1Auto extends Robot {
         // straife to left align with ground junction
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, 0.5);
         // back to align with wall since straife drifts
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,4, -0.5);
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
         // drive up to ground junction
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
 
-        // back away from ground junction
+        // back away from low junction
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
+        // strife to the left
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
-        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,6, -0.5);
+        // back up to align with the wall
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, -0.5);
 
 
         // lifts to small junction
-        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 16, 0.7);
+        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.7);
 
 
         // lowers lift to the Ground Junction
@@ -319,22 +342,23 @@ public class javabotsLM1Auto extends Robot {
         // Based on Signal ID:
         // return to initial to go forward then to the left
 
+         // strife to left
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, -0.5);
+        // go back to align with the wall
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 17, -0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, 0.5);
+        // go straignt
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
+
         // return to initial then go forward
-        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
-        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3, 0.5);
-        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 17 , 0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.5);
+        ;
         // return to initial then go forward then right
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8.5, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 20, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, 0.5);
+        // straife to right
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, 0.5);
+        // go back align with wall
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.5);
+       // go straight
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
     }
 
     @Override
