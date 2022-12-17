@@ -343,7 +343,7 @@ public class javabotsLM1Auto extends Robot {
         // return to initial to go forward then to the left
 
          // strife to left
-        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, -0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, -0.5);
         // go back to align with the wall
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         // go straignt
