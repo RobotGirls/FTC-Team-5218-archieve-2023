@@ -56,9 +56,9 @@ import team25core.StandardFourMotorRobot;
 import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
 
-@TeleOp(name = "JavaTeleop")
+@TeleOp(name = "TwoStickMechanumTeleop")
 //@Disabled
-public class JavaTeleop extends StandardFourMotorRobot {
+public class TwoStickMechanumTeleop extends StandardFourMotorRobot {
 
 
     private TeleopDriveTask drivetask;
@@ -74,7 +74,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private static final int CONE_CLOSE =0;
 
     private static final int ARM_OPEN = 1;
-    private static final int ARM_CLOSE =0;
+    private static final int ARM_CLOSE = 0;
 
     private BNO055IMU imu;
 
