@@ -230,7 +230,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         //position 0 (original pos)
                         coneServo.setPosition(CONE_RELEASE);
                         break;
-//                    case LEFT_STICK_UP:
                     case LEFT_TRIGGER_DOWN:
                         //position 1
                         junctionAligner.setPosition(ALIGNER_FRONT);

@@ -156,7 +156,8 @@ public class javabotsLM1Auto extends Robot {
         });
     }
 
-    private void decideWhichSignalWasSeen() {
+    private void decideWhichSignalWasSeen()
+    {
 
         if (detectedAprilTagID == SIGNAL_LEFT) {
             driveToSignalZone(leftPath);
@@ -165,9 +166,7 @@ public class javabotsLM1Auto extends Robot {
         } else {
             driveToSignalZone(rightPath);
         }
-
     }
-
 
     private void driveToFromFirstGroundJunction(DeadReckonPath driveToGround1Path)
     {
@@ -230,14 +229,12 @@ public class javabotsLM1Auto extends Robot {
 
                     coneServo.setPosition(CONE_RELEASE);
                     raiseLiftOffFirstGroundJunction();
-
                 }
             }
         });
     }
     public void raiseLiftOffFirstGroundJunction()
     {
-
         this.addTask(new DeadReckonTask(this, raiseLiftOffGroundJunctionPath, liftMotorDrivetrain){
 
             @Override
@@ -272,24 +269,15 @@ public class javabotsLM1Auto extends Robot {
         });
     }
 
-    public void delayAndLowerLift(int seconds)
+    public void delayAndLowerLift(int milliseconds)
     {
-        addTask(new SingleShotTimerTask(this, 1000*seconds) {
+        addTask(new SingleShotTimerTask(this, 1000*milliseconds) {
             @Override
             public void handleEvent (RobotEvent e) {
-//                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-//                lowerLiftToFirstGroundJunction();
-//                switch(event.kind) {
-//                    case EXPIRED:
                         lowerLiftToFirstGroundJunction();
-
-                       // break;
-              // }
             }
         });
     }
-
-
 
     public void initPaths()
     {
