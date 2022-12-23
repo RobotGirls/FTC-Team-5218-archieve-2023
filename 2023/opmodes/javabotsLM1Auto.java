@@ -73,8 +73,8 @@ public class javabotsLM1Auto extends Robot {
     private static final double CONE_GRAB = 0.2;
     private static final double CONE_RELEASE = 0.67;
 
-    private static final double ARM_FRONT = 0.06;
-    private static final double ARM_BACK = 1;
+    private static final double ARM_FRONT = .8;
+    private static final double ARM_BACK = 0;
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
@@ -156,7 +156,8 @@ public class javabotsLM1Auto extends Robot {
         });
     }
 
-    private void decideWhichSignalWasSeen() {
+    private void decideWhichSignalWasSeen()
+    {
 
         if (detectedAprilTagID == SIGNAL_LEFT) {
             driveToSignalZone(leftPath);
@@ -165,9 +166,7 @@ public class javabotsLM1Auto extends Robot {
         } else {
             driveToSignalZone(rightPath);
         }
-
     }
-
 
     private void driveToFromFirstGroundJunction(DeadReckonPath driveToGround1Path)
     {
@@ -230,14 +229,12 @@ public class javabotsLM1Auto extends Robot {
 
                     coneServo.setPosition(CONE_RELEASE);
                     raiseLiftOffFirstGroundJunction();
-
                 }
             }
         });
     }
     public void raiseLiftOffFirstGroundJunction()
     {
-
         this.addTask(new DeadReckonTask(this, raiseLiftOffGroundJunctionPath, liftMotorDrivetrain){
 
             @Override
@@ -272,24 +269,15 @@ public class javabotsLM1Auto extends Robot {
         });
     }
 
-    public void delayAndLowerLift(int seconds)
+    public void delayAndLowerLift(int milliseconds)
     {
-        addTask(new SingleShotTimerTask(this, 1000*seconds) {
+        addTask(new SingleShotTimerTask(this, 1000*milliseconds) {
             @Override
             public void handleEvent (RobotEvent e) {
-//                SingleShotTimerEvent event = (SingleShotTimerEvent) e;
-//                lowerLiftToFirstGroundJunction();
-//                switch(event.kind) {
-//                    case EXPIRED:
                         lowerLiftToFirstGroundJunction();
-
-                       // break;
-              // }
             }
         });
     }
-
-
 
     public void initPaths()
     {
