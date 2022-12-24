@@ -79,7 +79,11 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private static final double ARM_FRONT = 0.06;
     private static final double ARM_BACK = 1;
 
+    private static final double ALIGNER_FRONT = .6;
+    private static final double ALIGNER_BACK = .2;
+
     //arm is 5, cone is 3
+
 
     private BNO055IMU imu;
 
@@ -87,6 +91,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
     // private DcMotor intakeMotor;
 
     private Servo coneServo;
+    private Servo junctionAligner;
     private Servo armServo;
 
     private boolean currentlySlow = false;
@@ -119,6 +124,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 //        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         coneServo = hardwareMap.servo.get("coneServo");
+        junctionAligner = hardwareMap.servo.get("junctionAligner");
         armServo = hardwareMap.servo.get("armServo");
 
         // using encoders to record ticks
@@ -128,6 +134,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         coneServo.setPosition(0.4);
+        junctionAligner.setPosition(.2);
         armServo.setPosition(0.06);
 
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -145,7 +152,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
        // liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
-        liftMotorTask = new OneWheelDriveTask(this, liftMotor, false);
+        liftMotorTask = new OneWheelDriveTask(this, liftMotor, true);
         liftMotorTask.slowDown(false);
 //        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
 //        outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
@@ -223,10 +230,19 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         //position 0 (original pos)
                         coneServo.setPosition(CONE_RELEASE);
                         break;
+                    case LEFT_TRIGGER_DOWN:
+                        //position 1
+                        junctionAligner.setPosition(ALIGNER_FRONT);
+                        break;
+                    case RIGHT_TRIGGER_DOWN:
+                        //position 0 (original pos)
+                        junctionAligner.setPosition(ALIGNER_BACK);
+                        break;
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
 //                    case LEFT_STICK_UP:
+
                 }
             }
         });
