@@ -76,8 +76,8 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private static final double CONE_GRAB = 0.2;
     private static final double CONE_RELEASE = 0.67;
 
-    private static final double ARM_FRONT = 0.06;
-    private static final double ARM_BACK = 1;
+    private static final double ARM_FRONT = 0.8;
+    private static final double ARM_BACK = 0;
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
@@ -135,7 +135,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         coneServo.setPosition(0.4);
         junctionAligner.setPosition(.2);
-        armServo.setPosition(0.06);
+        armServo.setPosition(0.8);
 
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 

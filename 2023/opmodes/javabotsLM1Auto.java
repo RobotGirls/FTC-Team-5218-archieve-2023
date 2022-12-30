@@ -73,8 +73,8 @@ public class javabotsLM1Auto extends Robot {
     private static final double CONE_GRAB = 0.2;
     private static final double CONE_RELEASE = 0.67;
 
-    private static final double ARM_FRONT = 0.06;
-    private static final double ARM_BACK = 1;
+    private static final double ARM_FRONT = .8;
+    private static final double ARM_BACK = 0;
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
