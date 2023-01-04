@@ -58,9 +58,9 @@ import team25core.TankMechanumControlScheme;
 import team25core.TankMechanumControlSchemeReverse;
 import team25core.TeleopDriveTask;
 
-@TeleOp(name = "JavaTeleop")
+@TeleOp(name = "OGControlsTeleop")
 //@Disabled
-public class JavaTeleop extends StandardFourMotorRobot {
+public class OGControlsTeleop extends StandardFourMotorRobot {
 
 
     private TeleopDriveTask drivetask;
