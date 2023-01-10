@@ -47,6 +47,7 @@ import org.openftc.apriltag.AprilTagDetection;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
+import team25core.FourWheelDirectIMUDrivetrain;
 import team25core.GyroTask;
 import team25core.IMUGyroDriveTask;
 import team25core.OneWheelDirectDrivetrain;
@@ -66,7 +67,7 @@ public class javabotsIMU_LM2Auto extends Robot {
     private DcMotor backLeft;
     private DcMotor backRight;
 
-    private FourWheelDirectDrivetrain drivetrain;
+    private FourWheelDirectIMUDrivetrain drivetrain;
 
     private OneWheelDirectDrivetrain liftMotorDrivetrain;
     private DcMotor liftMotor;
@@ -130,6 +131,8 @@ public class javabotsIMU_LM2Auto extends Robot {
 
     private Telemetry.Item whereAmI;
 
+    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0;
+
     Telemetry myTelemetry;
     //= this.telemetry
 
@@ -179,6 +182,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         // Now that gyroTask is instantiated we can call its init method
         gyroTask.init();
         gyroTask.initTelemetry(this.telemetry);
+        gyroTask.setDrivetrain(drivetrain);
     }
 
     public void setAprilTagDetection() {
@@ -365,7 +369,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         // FIXME This is just getting temporarily commented out for IMU
         // initial distance must be 9
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.TURN, 90, 0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 90, 0.5);
         // FIXME Temporarily comment this out to test out the IMU
 //        // back to align with wall since strafe drifts
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
@@ -436,9 +440,13 @@ public class javabotsIMU_LM2Auto extends Robot {
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
+        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
+        // We are setting the target yaw to the value of the constant
+        // TARGET_YAW_FOR_DRIVING_STRAIGHT which is zero for our robot to
+        // go straight.
+        drivetrain.setTarget(TARGET_YAW_FOR_DRIVING_STRAIGHT);
 
         liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
         liftMotorDrivetrain.resetEncoders();
