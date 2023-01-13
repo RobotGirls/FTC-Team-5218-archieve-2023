@@ -131,6 +131,7 @@ public class javabotsIMU_LM2Auto extends Robot {
 
     private Telemetry.Item whereAmI;
 
+
     private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0;
 
     Telemetry myTelemetry;
@@ -369,7 +370,10 @@ public class javabotsIMU_LM2Auto extends Robot {
         // FIXME This is just getting temporarily commented out for IMU
         // initial distance must be 9
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 90, 0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
         // FIXME Temporarily comment this out to test out the IMU
 //        // back to align with wall since strafe drifts
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
@@ -463,7 +467,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         }
 
         // initialized heading telemetry
-        headingTlm = telemetry.addData("Current/target heading is: ", 0.0);
+        headingTlm = telemetry.addData("Current/target heading is: ", "0.0");
 
 
         // the following tlm is used when debug is true
@@ -487,8 +491,8 @@ public class javabotsIMU_LM2Auto extends Robot {
         }
         driveToFromFirstGroundJunction(driveToGround1Path);
         whereAmI.setValue("in Start");
-        setAprilTagDetection();
-        addTask(detectionTask);
+        // setAprilTagDetection();
+        // addTask(detectionTask);
     }
 }
 
