@@ -35,32 +35,29 @@ package opmodes;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import team25core.DeadmanMotorTask;
 import team25core.GamepadTask;
 import team25core.MechanumGearedDrivetrain;
-import team25core.OneWheelDirectDrivetrain;
 import team25core.OneWheelDriveTask;
-import team25core.Robot;
 import team25core.RobotEvent;
-import team25core.RunToEncoderValueTask;
-import team25core.SingleShotTimerTask;
 import team25core.StandardFourMotorRobot;
-import team25core.TankMechanumControlScheme;
-import team25core.TankMechanumControlSchemeReverse;
+import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
 
-@TeleOp(name = "JavaTeleop")
+import team25core.RGBColorSensorTask;
+
+import team25core.SingleShotColorSensorTask;
+
+@TeleOp(name = "TwoStickTeleopWithColorSensor")
 //@Disabled
-public class JavaTeleop extends StandardFourMotorRobot {
+public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
 
     private TeleopDriveTask drivetask;
@@ -70,11 +67,14 @@ public class JavaTeleop extends StandardFourMotorRobot {
         COUNTERCLOCKWISE,
     }
     //added field centric
-
     private Telemetry.Item buttonTlm;
+    private Telemetry.Item colorDetectedTlm;
+    private Telemetry.Item redDetectedTlm;
+    private Telemetry.Item blueDetectedTlm;
+    private Telemetry.Item greenDetectedTlm;
     private Telemetry.Item coneTlm;
-    private static final double CONE_GRAB = 0.2;
-    private static final double CONE_RELEASE = 0.67;
+    private static final double CONE_GRAB = 0.12;
+    private static final double CONE_RELEASE = 1.00;
 
     private static final double ARM_FRONT = 0.8;
     private static final double ARM_BACK = 0;
@@ -83,8 +83,6 @@ public class JavaTeleop extends StandardFourMotorRobot {
     private static final double ALIGNER_BACK = .2;
 
     //arm is 5, cone is 3
-
-
     private BNO055IMU imu;
 
     private DcMotor liftMotor;
@@ -96,18 +94,16 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
     private boolean currentlySlow = false;
 
-    //private DeadmanMotorTask liftMotorUpTask;
-    //private DeadmanMotorTask liftMotorDownTask;
     private OneWheelDriveTask liftMotorTask;
-
-//    private DeadmanMotorTask intakeTask;
-//    private DeadmanMotorTask outtakeTask;
-
+    protected RGBColorSensorTask colorSensorTask;
+    private ColorSensor colorSensor;
     MecanumFieldCentricDriveScheme scheme;
 
     private MechanumGearedDrivetrain drivetrain;
 
     private static final int TICKS_PER_INCH = 79;
+
+    protected int[] colorArray = new int[3];
 
     @Override
     public void handleEvent(RobotEvent e) {
@@ -119,13 +115,12 @@ public class JavaTeleop extends StandardFourMotorRobot {
         super.init();
 
         //mechanisms
-//        carouselMech = hardwareMap.get(DcMotor.class, "carouselMech");
         liftMotor = hardwareMap.get(DcMotor.class,"liftMotor");
-//        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
 
         coneServo = hardwareMap.servo.get("coneServo");
         junctionAligner = hardwareMap.servo.get("junctionAligner");
         armServo = hardwareMap.servo.get("armServo");
+        colorSensor = hardwareMap.colorSensor.get("colorSensor");
 
         // using encoders to record ticks
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -133,7 +128,10 @@ public class JavaTeleop extends StandardFourMotorRobot {
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        coneServo.setPosition(0.4);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        coneServo.setPosition(CONE_GRAB);
         junctionAligner.setPosition(.2);
         armServo.setPosition(0.8);
 
@@ -141,21 +139,22 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
+        colorDetectedTlm = telemetry.addData("color detected", "unknown");
 
-        TankMechanumControlSchemeReverse scheme = new TankMechanumControlSchemeReverse(gamepad1);
+        blueDetectedTlm = telemetry.addData("blue", 0);
+        redDetectedTlm = telemetry.addData("red", 0);
+        greenDetectedTlm = telemetry.addData("green", 0);
+
+        TwoStickMechanumControlScheme scheme = new TwoStickMechanumControlScheme(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
-       // drivetrain.setNoncanonicalMotorDirection();
+        drivetrain.setNoncanonicalMotorDirection();
         // Note we are swapping the rights and lefts in the arguments below
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
-        drivetask = new TeleopDriveTask(this, scheme, backLeft, backRight, frontLeft, frontRight);
+        drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
 
-        //liftMotorUpTask = new DeadmanMotorTask(this, liftMotor,  -1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_DOWN);
-       // liftMotorDownTask    = new DeadmanMotorTask(this, liftMotor, 1.0, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.LEFT_STICK_UP);
         liftMotorTask = new OneWheelDriveTask(this, liftMotor, true);
         liftMotorTask.slowDown(false);
-//        intakeTask = new DeadmanMotorTask(this, intakeMotor,  -0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_UP);
-//        outtakeTask    = new DeadmanMotorTask(this, intakeMotor, 0.5, GamepadTask.GamepadNumber.GAMEPAD_2, DeadmanMotorTask.DeadmanButton.RIGHT_STICK_DOWN);
     }
 
     public void initIMU()
@@ -175,6 +174,43 @@ public class JavaTeleop extends StandardFourMotorRobot {
 
         //Gamepad 1
         this.addTask(drivetask);
+        colorSensorTask = new RGBColorSensorTask(this, colorSensor) {
+            public void handleEvent(RobotEvent e) {
+                RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
+                // sets threshold for blue, red, and green to ten thousand
+                colorSensorTask.setThresholds(10000, 10000, 5000);
+                colorArray = colorSensorTask.getColors();
+                // shows the values of blue, red, green on the telemetry
+                blueDetectedTlm.setValue(colorArray[0]);
+                redDetectedTlm.setValue(colorArray[1]);
+                greenDetectedTlm.setValue(colorArray[2]);
+                switch(event.kind) {
+                    // red is at the end
+                    case RED_DETECTED:
+                        //  colorSensorTask.suspend();
+                        //  hLift.setPower(0.0);
+                        //  state = LiftStates.DROPPING;
+                        colorDetectedTlm.setValue("red");
+                        break;
+                    case BLUE_DETECTED:
+                        //  hLift.setPower(0.0);
+                        //  this.removeTask(colorSensorTask);
+                        colorDetectedTlm.setValue("blue");
+                        //  state = LiftStates.LOWERING;
+                        break;
+                    case GREEN_DETECTED:
+                        //  hLift.setPower(0.0);
+                        //  this.removeTask(colorSensorTask);
+                        colorDetectedTlm.setValue("green");
+                        //  state = LiftStates.LOWERING;
+                        break;
+                    default:
+                        colorDetectedTlm.setValue("none");
+                        break;
+                }
+            }
+        };
+        this.addTask(colorSensorTask);
 
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_1) {
             //@Override
@@ -201,11 +237,7 @@ public class JavaTeleop extends StandardFourMotorRobot {
         });
 
         //Gamepad 2
-        //this.addTask(liftMotorUpTask);
-       // this.addTask(liftMotorDownTask);
         this.addTask(liftMotorTask);
-//        this.addTask(intakeTask);
-//        this.addTask(outtakeTask);
 
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
             //@Override
@@ -238,11 +270,14 @@ public class JavaTeleop extends StandardFourMotorRobot {
                         //position 0 (original pos)
                         junctionAligner.setPosition(ALIGNER_BACK);
                         break;
+                    case LEFT_BUMPER_DOWN:
+                        // position 1
+                        // raise lift motor to blue
+                        break;
+
                     default:
                         buttonTlm.setValue("Not Moving");
                         break;
-//                    case LEFT_STICK_UP:
-
                 }
             }
         });
