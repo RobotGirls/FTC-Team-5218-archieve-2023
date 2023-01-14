@@ -32,10 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package opmodes;
 
-import static opmodes.IMUDriveAutoTest.TURN_SPEED;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -47,9 +44,6 @@ import org.openftc.apriltag.AprilTagDetection;
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
 import team25core.FourWheelDirectDrivetrain;
-import team25core.FourWheelDirectIMUDrivetrain;
-import team25core.GyroTask;
-import team25core.IMUGyroDriveTask;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
@@ -57,17 +51,17 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsIMU_LM2Auto1")
+@Autonomous(name = "javabotsLM1Auto5")
 //@Disabled
-@Config
-public class javabotsIMU_LM2Auto extends Robot {
+//@Config
+public class javabotsLM1Auto extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
 
-    private FourWheelDirectIMUDrivetrain drivetrain;
+    private FourWheelDirectDrivetrain drivetrain;
 
     private OneWheelDirectDrivetrain liftMotorDrivetrain;
     private DcMotor liftMotor;
@@ -76,12 +70,11 @@ public class javabotsIMU_LM2Auto extends Robot {
     private Servo coneServo;
     private Servo armServo;
 
-    private static final double CONE_GRAB = 0.12;
-    private static final double CONE_RELEASE = 1.00;
+    private static final double CONE_GRAB = 0.2;
+    private static final double CONE_RELEASE = 0.67;
 
-    private static final double ARM_FRONT = .875;
-    private static final double ARM_BACK = 0.0918;
-
+    private static final double ARM_FRONT = .8;
+    private static final double ARM_BACK = 0;
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
@@ -103,24 +96,6 @@ public class javabotsIMU_LM2Auto extends Robot {
     DeadReckonPath lowerLiftToGroundJunctionPath;
     DeadReckonPath raiseLiftOffGroundJunctionPath;
 
-    // Telemetry for IMU from JavaTeleopIMU 1/2/23
-//    Telemetry.Item imuStatus;
-//    Telemetry.Item imuCalib;
-//    Telemetry.Item imuHeading;
-//    Telemetry.Item imuRoll;
-//    Telemetry.Item imuPitch;
-//    Telemetry.Item imuGrav;
-
-    // added for IMU 1/2/23
-    private BNO055IMU imu;
-    private Telemetry.Item gyroItemTlm; 
-    private IMUGyroDriveTask gyroTask;
-
-    private int i = 0;
-
-    // added for IMU 1/3/23
-    private boolean debug = false;
-    private Telemetry.Item headingTlm;
 
     private Telemetry.Item tagIdTlm;
 
@@ -130,19 +105,14 @@ public class javabotsIMU_LM2Auto extends Robot {
     private AprilTagDetectionTask detectionTask;
     //private double tagID;
 
+
     private Telemetry.Item whereAmI;
-
-
-    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0;
-
-    Telemetry myTelemetry;
-    //= this.telemetry
-
+ 
     /*
      * The default event handler for the robot.
      */
 
-   @Override
+    @Override
     public void handleEvent(RobotEvent e)
     {
         /*
@@ -153,53 +123,15 @@ public class javabotsIMU_LM2Auto extends Robot {
         }
     }
 
-    public void startUsingIMU()
-    {
-        myTelemetry = this.telemetry;
-        // Mapping to the IMU which is needed to instantiate it in gyroTask
-        // Retrieve the IMU from the hardware map
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        // instantiating gyroTask
-        gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
-            @Override
-            public void handleEvent (RobotEvent event) {
-                i = i++;
-                whereAmI.setValue("in IMUGyroDriveTask handleEvent" + i);
-               // gyroTask.displayTelemetry(myTelemetry);
-                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
-                    drivetrain.stop();
-                    driveToSignalZone(middlePath);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
-                   }
-                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
-                    drivetrain.turn(TURN_SPEED / 2);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
-                   }
-                }
-            }
-
-        };
-        // Now that gyroTask is instantiated we can call its init method
-        gyroTask.init();
-        gyroTask.initTelemetry(this.telemetry);
-        gyroTask.setDrivetrain(drivetrain);
-    }
 
     public void setAprilTagDetection() {
-        if (debug) {
-            whereAmI.setValue("before detectionTask");
-        }
         whereAmI.setValue("before detectionTask");
         detectionTask = new AprilTagDetectionTask(this, "Webcam 1") {
             @Override
             public void handleEvent(RobotEvent e) {
                 TagDetectionEvent event = (TagDetectionEvent) e;
                 tagObject = event.tagObject;
-                if (debug) {
-                    tagIdTlm.setValue(tagObject.id);
-                }
+                tagIdTlm.setValue(tagObject.id);
                 whereAmI.setValue("in handleEvent");
                 detectedAprilTagID = tagObject.id;
             }
@@ -245,18 +177,20 @@ public class javabotsIMU_LM2Auto extends Robot {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                // FIXME temporarily comment this out to test IMU
-//                if (path.kind == EventKind.PATH_DONE)
-//                {
-//                    if (goingToLowerJunction) {
-//                        lowerLiftToFirstGroundJunction();
-//                        goingToLowerJunction = false;
-//                    } else {
-//                        // have finished backing away from lower junction
-//                        decideWhichSignalWasSeen();
-//                    }
-//                    //delayAndLowerLift(2);
-//                }
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+                    if (goingToLowerJunction) {
+                        lowerLiftToFirstGroundJunction();
+                        goingToLowerJunction = false;
+                    } else {
+                        // have finished backing away from lower junction
+                        decideWhichSignalWasSeen();
+
+                    }
+                    //delayAndLowerLift(2);
+
+                }
             }
         });
     }
@@ -367,26 +301,19 @@ public class javabotsIMU_LM2Auto extends Robot {
         rightPath.stop();
 
         // drives to first ground junction
-        // strafe to left align with ground junction
-        // FIXME This is just getting temporarily commented out for IMU
-        // initial distance must be 9
-//        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
-        // FIXME Temporarily comment this out to test out the IMU
-//        // back to align with wall since strafe drifts
-//        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
-//        // drive up to ground junction
-//        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
+        // straife to left align with ground junction
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, 0.5);
+        // back to align with wall since straife drifts
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
+        // drive up to ground junction
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
 
-//        // back away from low junction
-//        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
-//        // strife to the left
-//        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
-//        // back up to align with the wall
-//        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, -0.5);
+        // back away from low junction
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
+        // strife to the left
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        // back up to align with the wall
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, -0.5);
 
 
         // lifts to small junction
@@ -403,31 +330,28 @@ public class javabotsIMU_LM2Auto extends Robot {
         // Based on Signal ID:
         // return to initial to go forward then to the left
 
-//         // strife to left
-//        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, -0.5);
-//        // go back to align with the wall
-//        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
-//        // go straignt
-//        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
-//
-//        // return to initial then go forward
-//        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.5);
-//        ;
-//        // return to initial then go forward then right
-//        // straife to right
-//        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, 0.5);
-//        // go back align with wall
-//        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.5);
-//       // go straight
-//        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
+         // strife to left
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, -0.5);
+        // go back to align with the wall
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
+        // go straignt
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
+
+        // return to initial then go forward
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 15, 0.5);
+        ;
+        // return to initial then go forward then right
+        // straife to right
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, 0.5);
+        // go back align with wall
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.5);
+       // go straight
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
     }
 
     @Override
     public void init()
     {
-        // cindy added
-        super.init();
-
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
@@ -445,13 +369,9 @@ public class javabotsIMU_LM2Auto extends Robot {
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight, frontLeft, backLeft);
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
-        // We are setting the target yaw to the value of the constant
-        // TARGET_YAW_FOR_DRIVING_STRAIGHT which is zero for our robot to
-        // go straight.
-        drivetrain.setTarget(TARGET_YAW_FOR_DRIVING_STRAIGHT);
 
         liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
         liftMotorDrivetrain.resetEncoders();
@@ -461,39 +381,17 @@ public class javabotsIMU_LM2Auto extends Robot {
         armServo.setPosition(ARM_FRONT);
 
         whereAmI = telemetry.addData("location in code", "init");
-
-        if (debug) {
-            tagIdTlm = telemetry.addData("tagId", "none");
-            gyroItemTlm = telemetry.addData("Gyro state:", "Not at target");
-        }
-
-        // initialized heading telemetry
-        headingTlm = telemetry.addData("Current/target heading is: ", "0.0");
-
-
-        // the following tlm is used when debug is true
-       // tagIdTlm = telemetry.addData("tagId","none");
-
+        tagIdTlm = telemetry.addData("tagId","none");
         initPaths();
-
-        startUsingIMU();
     }
 
     @Override
     public void start()
     {
-        // FIXME For IMU temporarily starting from driveToFromFirstGroundJunction
-       // liftToFirstGroundJunction();
-
-        // added addTask
-        addTask(gyroTask);
-        if (debug){
-            whereAmI.setValue("in Start");
-        }
-        driveToFromFirstGroundJunction(driveToGround1Path);
+        liftToFirstGroundJunction();
         whereAmI.setValue("in Start");
-        // setAprilTagDetection();
-        // addTask(detectionTask);
+        setAprilTagDetection();
+        addTask(detectionTask);
     }
 }
 

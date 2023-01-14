@@ -76,8 +76,8 @@ public class OGControlsTeleop extends StandardFourMotorRobot {
     private static final double CONE_GRAB = 0.12;
     private static final double CONE_RELEASE = 1.00;
 
-    private static final double ARM_FRONT = 0.8;
-    private static final double ARM_BACK = 0;
+    private static final double ARM_FRONT = 0.875;
+    private static final double ARM_BACK = 0.0918;
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
