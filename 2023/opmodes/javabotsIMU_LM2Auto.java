@@ -46,6 +46,7 @@ import org.openftc.apriltag.AprilTagDetection;
 
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
+import team25core.DeadReckonTaskWithIMU;
 import team25core.FourWheelDirectDrivetrain;
 import team25core.FourWheelDirectIMUDrivetrain;
 import team25core.GyroTask;
@@ -114,7 +115,7 @@ public class javabotsIMU_LM2Auto extends Robot {
     // added for IMU 1/2/23
     private BNO055IMU imu;
     private Telemetry.Item gyroItemTlm; 
-    private IMUGyroDriveTask gyroTask;
+    private DeadReckonTaskWithIMU gyroTask;
 
     private int i = 0;
 
@@ -133,7 +134,8 @@ public class javabotsIMU_LM2Auto extends Robot {
     private Telemetry.Item whereAmI;
 
 
-    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0;
+    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0.0;
+    private boolean showHeading = true;
 
     Telemetry myTelemetry;
     //= this.telemetry
@@ -153,39 +155,39 @@ public class javabotsIMU_LM2Auto extends Robot {
         }
     }
 
-    public void startUsingIMU()
-    {
-        myTelemetry = this.telemetry;
-        // Mapping to the IMU which is needed to instantiate it in gyroTask
-        // Retrieve the IMU from the hardware map
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        // instantiating gyroTask
-        gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
-            @Override
-            public void handleEvent (RobotEvent event) {
-                i = i++;
-                whereAmI.setValue("in IMUGyroDriveTask handleEvent" + i);
-               // gyroTask.displayTelemetry(myTelemetry);
-                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
-                    drivetrain.stop();
-                    driveToSignalZone(middlePath);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
-                   }
-                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
-                    drivetrain.turn(TURN_SPEED / 2);
-                   if (debug) {
-                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
-                   }
-                }
-            }
-
-        };
-        // Now that gyroTask is instantiated we can call its init method
-        gyroTask.init();
-        gyroTask.initTelemetry(this.telemetry);
-        gyroTask.setDrivetrain(drivetrain);
-    }
+//    public void startUsingIMU()
+//    {
+//        myTelemetry = this.telemetry;
+//        // Mapping to the IMU which is needed to instantiate it in gyroTask
+//        // Retrieve the IMU from the hardware map
+//        imu = hardwareMap.get(BNO055IMU.class, "imu");
+//        // instantiating gyroTask
+//        gyroTask = new IMUGyroDriveTask(this, imu, 0, true, headingTlm) {
+//            @Override
+//            public void handleEvent (RobotEvent event) {
+//                i = i++;
+//                whereAmI.setValue("in IMUGyroDriveTask handleEvent" + i);
+//               // gyroTask.displayTelemetry(myTelemetry);
+//                if(((IMUGyroEvent) event).kind == EventKind.HIT_TARGET) {
+//                    drivetrain.stop();
+//                    driveToSignalZone(middlePath);
+//                   if (debug) {
+//                       whereAmI.setValue("handleGyroEvent:handleEvent:Hit Target");
+//                   }
+//                } else if (((IMUGyroEvent) event).kind == EventKind.PAST_TARGET) {
+//                    drivetrain.turn(TURN_SPEED / 2);
+//                   if (debug) {
+//                       whereAmI.setValue("handleGyroEvent:handleEvent:Past Target");
+//                   }
+//                }
+//            }
+//
+//        };
+//        // Now that gyroTask is instantiated we can call its init method
+//        gyroTask.init();
+//        gyroTask.initTelemetry(this.telemetry);
+//        gyroTask.setDrivetrain(drivetrain);
+//    }
 
     public void setAprilTagDetection() {
         if (debug) {
@@ -241,7 +243,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         whereAmI.setValue("in driveToFromFirstGroundJunction");
         RobotLog.i("drives to First Ground Junction");
 
-        this.addTask(new DeadReckonTask(this, driveToGround1Path, drivetrain){
+        gyroTask = new DeadReckonTaskWithIMU(this, driveToGround1Path, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -258,28 +260,13 @@ public class javabotsIMU_LM2Auto extends Robot {
 //                    //delayAndLowerLift(2);
 //                }
             }
-        });
+        };
+        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+        gyroTask.initTelemetry(this.telemetry);
+        addTask(gyroTask);
     }
 
 
-//    private void lowerToFirstGroundJunction(DeadReckonPath ground1Path)
-//    {
-//        whereAmI.setValue("in driveToFromFirstGroundJunction");
-//        RobotLog.i("drives to First Ground Junction");
-//
-//        this.addTask(new DeadReckonTask(this, ground1Path, drivetrain){
-//            @Override
-//            public void handleEvent(RobotEvent e) {
-//                DeadReckonEvent path = (DeadReckonEvent) e;
-//                if (path.kind == EventKind.PATH_DONE)
-//                {
-//                    RobotLog.i("finished parking");
-//                    coneServo.setPosition(CONE_RELEASE);
-//                    lowerLiftToFirstGroundJunction();
-//                }
-//            }
-//        });
-//    }
 
     public void lowerLiftToFirstGroundJunction()
     {
@@ -322,7 +309,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         whereAmI.setValue("in driveToSignalZone");
         RobotLog.i("drives straight onto the launch line");
 
-        this.addTask(new DeadReckonTask(this, signalPath, drivetrain){
+        this.addTask(new DeadReckonTaskWithIMU(this, signalPath, drivetrain){
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -371,10 +358,10 @@ public class javabotsIMU_LM2Auto extends Robot {
         // FIXME This is just getting temporarily commented out for IMU
         // initial distance must be 9
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,  90, 0.5);
+//          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
+//          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
+//          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
         // FIXME Temporarily comment this out to test out the IMU
 //        // back to align with wall since strafe drifts
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
@@ -437,6 +424,8 @@ public class javabotsIMU_LM2Auto extends Robot {
         coneServo = hardwareMap.servo.get("coneServo");
         armServo = hardwareMap.servo.get("armServo");
 
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -476,7 +465,7 @@ public class javabotsIMU_LM2Auto extends Robot {
 
         initPaths();
 
-        startUsingIMU();
+        // startUsingIMU();
     }
 
     @Override
@@ -486,14 +475,14 @@ public class javabotsIMU_LM2Auto extends Robot {
        // liftToFirstGroundJunction();
 
         // added addTask
-        addTask(gyroTask);
+       // addTask(gyroTask);
         if (debug){
             whereAmI.setValue("in Start");
         }
         driveToFromFirstGroundJunction(driveToGround1Path);
         whereAmI.setValue("in Start");
-        // setAprilTagDetection();
-        // addTask(detectionTask);
+         setAprilTagDetection();
+         addTask(detectionTask);
     }
 }
 
