@@ -51,14 +51,14 @@ import team25core.StandardFourMotorRobot;
 import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
 
-import team25core.RGBColorSensorTask;
+import team25core.sensors.color.RGBColorSensorTask;
+import team25core.sensors.color.RGBColorSensorMotorTask;
 
-import team25core.SingleShotColorSensorTask;
+import team25core.sensors.color.SingleShotColorSensorTask;
 
 @TeleOp(name = "TwoStickTeleopWithColorSensor")
 //@Disabled
 public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
-
 
     private TeleopDriveTask drivetask;
 
@@ -73,11 +73,12 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
     private Telemetry.Item blueDetectedTlm;
     private Telemetry.Item greenDetectedTlm;
     private Telemetry.Item coneTlm;
+    private Telemetry.Item showEncoderValuesTlm;
     private static final double CONE_GRAB = 0.12;
     private static final double CONE_RELEASE = 1.00;
 
-    private static final double ARM_FRONT = 0.8;
-    private static final double ARM_BACK = 0;
+    private static final double ARM_FRONT = 0.875;
+    private static final double ARM_BACK = 0.0918;
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
@@ -96,6 +97,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
     private OneWheelDriveTask liftMotorTask;
     protected RGBColorSensorTask colorSensorTask;
+    protected RGBColorSensorMotorTask rgbColorSensorMotorTask;
     private ColorSensor colorSensor;
     MecanumFieldCentricDriveScheme scheme;
 
@@ -133,7 +135,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
         coneServo.setPosition(CONE_GRAB);
         junctionAligner.setPosition(.2);
-        armServo.setPosition(0.8);
+        armServo.setPosition(0.875);
 
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -145,6 +147,8 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         redDetectedTlm = telemetry.addData("red", 0);
         greenDetectedTlm = telemetry.addData("green", 0);
 
+        showEncoderValuesTlm = telemetry.addData("Encoder values: ", 0);
+
         TwoStickMechanumControlScheme scheme = new TwoStickMechanumControlScheme(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
         drivetrain.setNoncanonicalMotorDirection();
@@ -152,7 +156,9 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
-
+        rgbColorSensorMotorTask = new RGBColorSensorMotorTask(this, colorSensor, liftMotor);
+        rgbColorSensorMotorTask.setThresholds(10000, 10000, 5000);
+        rgbColorSensorMotorTask.setTargetEncoderValues(1450, 2300, 3100);
         liftMotorTask = new OneWheelDriveTask(this, liftMotor, true);
         liftMotorTask.slowDown(false);
     }
@@ -171,6 +177,8 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
     @Override
     public void start() {
+    //  shows encoder values of the lift motor on telemetry; shows the current position of the lift motor
+//    showEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
 
         //Gamepad 1
         this.addTask(drivetask);
@@ -181,6 +189,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
                 colorSensorTask.setThresholds(10000, 10000, 5000);
                 colorArray = colorSensorTask.getColors();
                 // shows the values of blue, red, green on the telemetry
+                showEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
                 blueDetectedTlm.setValue(colorArray[0]);
                 redDetectedTlm.setValue(colorArray[1]);
                 greenDetectedTlm.setValue(colorArray[2]);
@@ -248,31 +257,55 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
                     case BUTTON_X_DOWN:
                         //position 0
-                        armServo.setPosition(ARM_FRONT);
+                        //  rgbColorSensorMotorTask.gotoBlue();
+                        liftMotor.setTargetPosition(1450);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_B_DOWN:
                         //position 1
-                        armServo.setPosition(ARM_BACK);
+                        //  rgbColorSensorMotorTask.gotoRed();
+                        liftMotor.setTargetPosition(2300);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_A_DOWN:
                         //position 1
-                        coneServo.setPosition(CONE_GRAB);
+                        //  rgbColorSensorMotorTask.gotoGreen();
+                        liftMotor.setTargetPosition(3100);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_Y_DOWN:
                         //position 0 (original pos)
-                        coneServo.setPosition(CONE_RELEASE);
-                        break;
-                    case LEFT_TRIGGER_DOWN:
-                        //position 1
-                        junctionAligner.setPosition(ALIGNER_FRONT);
-                        break;
-                    case RIGHT_TRIGGER_DOWN:
-                        //position 0 (original pos)
-                        junctionAligner.setPosition(ALIGNER_BACK);
+                        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case LEFT_BUMPER_DOWN:
                         // position 1
-                        // raise lift motor to blue
+                        armServo.setPosition(ARM_FRONT);
+                        break;
+                    case LEFT_TRIGGER_DOWN:
+                        //position 1
+                        // junctionAligner.setPosition(ALIGNER_FRONT);
+                        armServo.setPosition(ARM_BACK);
+                        break;
+                    case RIGHT_BUMPER_DOWN:
+                        coneServo.setPosition(CONE_RELEASE);
+                        break;
+                    case RIGHT_TRIGGER_DOWN:
+                        //position 0 (original pos)
+                        //junctionAligner.setPosition(ALIGNER_BACK);
+                        coneServo.setPosition(CONE_GRAB);
                         break;
 
                     default:
