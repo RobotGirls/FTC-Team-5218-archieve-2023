@@ -58,7 +58,7 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsIMU_LM2Auto1")
+@Autonomous(name = "javabotsIMU_LM2Auto2")
 //@Disabled
 @Config
 public class javabotsIMU_LM2Auto extends Robot {
@@ -358,7 +358,7 @@ public class javabotsIMU_LM2Auto extends Robot {
         // FIXME This is just getting temporarily commented out for IMU
         // initial distance must be 9
 //        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, 0.5);
-          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,  90, 0.5);
+          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,  24, 0.5);
 //          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
 //          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, 0.5);
 //          driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10, -0.5);
