@@ -164,7 +164,7 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
                         // If slow, then normal speed. If fast, then slow speed of motors.
                         //pertains to slowmode
                         if (currentlySlow) {
-                            drivetask.slowDown(0.55);
+                            drivetask.slowDown(0.50);
                             currentlySlow = false;
                         } else {
                             drivetask.slowDown(0.3);
