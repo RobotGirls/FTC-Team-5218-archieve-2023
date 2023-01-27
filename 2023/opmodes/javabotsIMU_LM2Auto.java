@@ -58,7 +58,7 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsIMU_LM2Auto2")
+@Autonomous(name = "javabotsIMU_LM2Auto3")
 //@Disabled
 @Config
 public class javabotsIMU_LM2Auto extends Robot {
