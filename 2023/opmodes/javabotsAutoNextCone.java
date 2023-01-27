@@ -92,8 +92,8 @@ public class javabotsAutoNextCone extends Robot {
     DeadReckonPath driveToLow1Path;
     DeadReckonPath driveFromLow1Path;
     DeadReckonPath liftToSmallJunctionPath;
-    DeadReckonPath dropToSmallJunctionPath;
-    DeadReckonPath secondPath;
+//    DeadReckonPath dropToSmallJunctionPath;
+//    DeadReckonPath secondPath;
     DeadReckonPath lowerLiftToLowJunctionPath;
     DeadReckonPath raiseLiftOffLowJunctionPath;
     DeadReckonPath lowerLiftToHighJunctionPath;
@@ -102,6 +102,7 @@ public class javabotsAutoNextCone extends Robot {
     DeadReckonPath lowerLiftToConeStackPath;
     DeadReckonPath raiseLiftOffConeStackPath;
     DeadReckonPath driveToHighJunctionPath;
+    DeadReckonPath driveFromHighJunctionPath;
     DeadReckonPath raiseLiftToHighJunctionPath;
 
     private Telemetry.Item tagIdTlm;
@@ -329,6 +330,7 @@ public class javabotsAutoNextCone extends Robot {
                 {
                     RobotLog.i("liftedToLowJunction");
                     coneServo.setPosition(CONE_RELEASE);
+                    driveToFromHighJunction(driveFromHighJunctionPath);
 
                 }
             }
@@ -367,13 +369,6 @@ public class javabotsAutoNextCone extends Robot {
     {
 
 
-        //    DeadReckonPath lowerLiftToHighJunctionPath;
-        //
-        //    DeadReckonPath coneStackPath;
-        //    DeadReckonPath lowerLiftToConeStackPath;
-        //    DeadReckonPath driveToHighJunctionPath;
-        //    DeadReckonPath raiseLiftToHighJunctionPath;
-
         driveToLow1Path = new DeadReckonPath();
         driveFromLow1Path = new DeadReckonPath();
         liftToSmallJunctionPath = new DeadReckonPath();
@@ -384,6 +379,7 @@ public class javabotsAutoNextCone extends Robot {
         lowerLiftToConeStackPath = new DeadReckonPath();
         raiseLiftOffConeStackPath = new DeadReckonPath();
         driveToHighJunctionPath = new DeadReckonPath();
+        driveFromHighJunctionPath = new DeadReckonPath();
         raiseLiftToHighJunctionPath = new DeadReckonPath();
         lowerLiftToHighJunctionPath = new DeadReckonPath();
 
@@ -428,19 +424,22 @@ public class javabotsAutoNextCone extends Robot {
         liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.7);
 
 
-        // lowers lift to the Ground Junction
+        // lowers lift to the low Junction
         lowerLiftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.6);
 
-        // raise lift off the Ground Junction
+        // raise lift off the low Junction
         raiseLiftOffLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.65);
 
-        // drive straight from the wall
+        // drive straight to cone stack
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.65);
         // turn to face the cone stack
         coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 10, 0.65);
         // drive straight to the cone stack
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.65);
 
+        //drives to high junction
+        driveToHighJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.65);
+//        driveFromHighJunction
         // lower lift to cone stack
         lowerLiftToConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -0.6); //distance or 8
 
