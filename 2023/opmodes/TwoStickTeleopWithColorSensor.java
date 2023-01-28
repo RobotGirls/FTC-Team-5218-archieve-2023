@@ -73,7 +73,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
     private Telemetry.Item blueDetectedTlm;
     private Telemetry.Item greenDetectedTlm;
     private Telemetry.Item coneTlm;
-    private Telemetry.Item showEncoderValuesTlm;
+    private Telemetry.Item showLiftEncoderValuesTlm;
     private static final double CONE_GRAB = 0.12;
     private static final double CONE_RELEASE = 1.00;
 
@@ -82,6 +82,10 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
+
+    private static final int BLUE_LOW_LIFT_POSITION = 1450;
+    private static final int RED_MED_LIFT_POSITION = 2300;
+    private static final int GREEN_HIGH_LIFT_POSITION = 3100;
 
     //arm is 5, cone is 3
     private BNO055IMU imu;
@@ -143,11 +147,13 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         buttonTlm = telemetry.addData("buttonState", "unknown");
         colorDetectedTlm = telemetry.addData("color detected", "unknown");
 
-        blueDetectedTlm = telemetry.addData("blue", 0);
-        redDetectedTlm = telemetry.addData("red", 0);
-        greenDetectedTlm = telemetry.addData("green", 0);
+        // FIXME need commentary
+        blueDetectedTlm = telemetry.addData("blue color sensor value", 0);
+        redDetectedTlm = telemetry.addData("red color sensor value", 0);
+        greenDetectedTlm = telemetry.addData("green color sensor value", 0);
 
-        showEncoderValuesTlm = telemetry.addData("Encoder values: ", 0);
+        // FIXME change variable and label to the origin's encoder value's name
+        showLiftEncoderValuesTlm = telemetry.addData("Lift encoder values: ", 0);
 
         TwoStickMechanumControlScheme scheme = new TwoStickMechanumControlScheme(gamepad1);
         drivetrain = new MechanumGearedDrivetrain(motorMap);
@@ -157,8 +163,11 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
         rgbColorSensorMotorTask = new RGBColorSensorMotorTask(this, colorSensor, liftMotor);
+        // FIXME change method to setRGBColorThresholds and change name
         rgbColorSensorMotorTask.setThresholds(10000, 10000, 5000);
-        rgbColorSensorMotorTask.setTargetEncoderValues(1450, 2300, 3100);
+        //  FIXME need to change the name of the method to more clearly identify that we are setting the encoder values
+        //  FIXME for what the lift values need to be in order to hit the blue, red, and green positions on the lift
+        rgbColorSensorMotorTask.setTargetEncoderValues(BLUE_LOW_LIFT_POSITION, RED_MED_LIFT_POSITION, GREEN_HIGH_LIFT_POSITION);
         liftMotorTask = new OneWheelDriveTask(this, liftMotor, true);
         liftMotorTask.slowDown(false);
     }
@@ -178,7 +187,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
     @Override
     public void start() {
     //  shows encoder values of the lift motor on telemetry; shows the current position of the lift motor
-//    showEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
+//    showLiftEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
 
         //Gamepad 1
         this.addTask(drivetask);
@@ -186,10 +195,12 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
             public void handleEvent(RobotEvent e) {
                 RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
                 // sets threshold for blue, red, and green to ten thousand
-                colorSensorTask.setThresholds(10000, 10000, 5000);
+                // FIXME seems redundant, possibly remove; said twice
+                // colorSensorTask.setThresholds(10000, 10000, 5000);
+                // returns the color values for blue, red, and green
                 colorArray = colorSensorTask.getColors();
                 // shows the values of blue, red, green on the telemetry
-                showEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
+                showLiftEncoderValuesTlm.setValue(liftMotor.getCurrentPosition());
                 blueDetectedTlm.setValue(colorArray[0]);
                 redDetectedTlm.setValue(colorArray[1]);
                 greenDetectedTlm.setValue(colorArray[2]);
@@ -246,6 +257,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         });
 
         //Gamepad 2
+        // left joystick is to raise and lower the lift
         this.addTask(liftMotorTask);
 
         this.addTask(new GamepadTask(this, GamepadTask.GamepadNumber.GAMEPAD_2) {
@@ -258,7 +270,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
                     case BUTTON_X_DOWN:
                         //position 0
                         //  rgbColorSensorMotorTask.gotoBlue();
-                        liftMotor.setTargetPosition(1450);
+                        liftMotor.setTargetPosition(BLUE_LOW_LIFT_POSITION);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         liftMotor.setPower(0.75);
                         while (liftMotor.isBusy()) {}
@@ -268,7 +280,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
                     case BUTTON_B_DOWN:
                         //position 1
                         //  rgbColorSensorMotorTask.gotoRed();
-                        liftMotor.setTargetPosition(2300);
+                        liftMotor.setTargetPosition(RED_MED_LIFT_POSITION);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         liftMotor.setPower(0.75);
                         while (liftMotor.isBusy()) {}
@@ -278,7 +290,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
                     case BUTTON_A_DOWN:
                         //position 1
                         //  rgbColorSensorMotorTask.gotoGreen();
-                        liftMotor.setTargetPosition(3100);
+                        liftMotor.setTargetPosition(GREEN_HIGH_LIFT_POSITION);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         liftMotor.setPower(0.75);
                         while (liftMotor.isBusy()) {}
