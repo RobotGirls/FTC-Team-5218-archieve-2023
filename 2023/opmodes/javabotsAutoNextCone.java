@@ -32,6 +32,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package opmodes;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -51,10 +54,9 @@ import team25core.RobotEvent;
 import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
-
+@Config
 @Autonomous(name = "javabotsAutoNextCone2")
 //@Disabled
-//@Config
 public class javabotsAutoNextCone extends Robot {
 
     private DcMotor frontLeft;
@@ -73,8 +75,8 @@ public class javabotsAutoNextCone extends Robot {
     private Servo coneServo;
     private Servo armServo;
 
-    private static final double CONE_GRAB = 0.12;
-    private static final double CONE_RELEASE = 1.00;
+    public static final double CONE_GRAB = 0.12;
+    public static final double CONE_RELEASE = 1.00;
 
     private static final double ARM_FRONT = .875;
     private static final double ARM_BACK = 0.0918;
@@ -82,11 +84,11 @@ public class javabotsAutoNextCone extends Robot {
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
 
-    static final int SIGNAL_LEFT = 5;
-    static final int SIGNAL_MIDDLE = 2;
-    static final int SIGNAL_RIGHT = 18;
-    static final double FORWARD_DISTANCE = 6;
-    static final double DRIVE_SPEED = -0.5;
+    public static int SIGNAL_LEFT = 5;
+    public static int SIGNAL_MIDDLE = 2;
+    public static int SIGNAL_RIGHT = 18;
+    public static double FORWARD_DISTANCE = 6;
+    public static double DRIVE_SPEED = -0.5;
 
     DeadReckonPath driveToLow1Path;
     DeadReckonPath driveFromLow1Path;
@@ -102,6 +104,9 @@ public class javabotsAutoNextCone extends Robot {
     DeadReckonPath driveFromHighJunctionPath;
     DeadReckonPath raiseLiftToHighJunctionPath;
 
+    DeadReckonPath lowerLiftBeforeConeStackPath;
+    DeadReckonPath coneStackCloserPath;
+
     private BNO055IMU imu;
     private DeadReckonTaskWithIMU gyroTask;
     private Telemetry.Item headingTlm;
@@ -116,21 +121,24 @@ public class javabotsAutoNextCone extends Robot {
 
     private Telemetry.Item whereAmI;
 
+    // MultipleTelemetry telemetry;
+
     private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0.0;
     private boolean showHeading = true;
+
+    DeadReckonTask deadReckonTask;
 
     /*
      * The default event handler for the robot.
      */
 
     @Override
-    public void handleEvent(RobotEvent e)
-    {
+    public void handleEvent(RobotEvent e) {
         /*
          * Every time we complete a segment drop a note in the robot log.
          */
         if (e instanceof DeadReckonTask.DeadReckonEvent) {
-            RobotLog.i("Completed path segment %d", ((DeadReckonTask.DeadReckonEvent)e).segment_num);
+            RobotLog.i("Completed path segment %d", ((DeadReckonTask.DeadReckonEvent) e).segment_num);
         }
     }
 
@@ -151,23 +159,20 @@ public class javabotsAutoNextCone extends Robot {
         detectionTask.init(telemetry, hardwareMap);
     }
 
-    public void liftToFirstLowJunction()
-    {
-        this.addTask(new DeadReckonTask(this, liftToLowJunctionPath, liftMotorDrivetrain){
+    public void liftToFirstLowJunction() {
+        this.addTask(new DeadReckonTask(this, liftToLowJunctionPath, liftMotorDrivetrain) {
             @Override
-            public void handleEvent (RobotEvent e){
+            public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("liftedToLoewJunction");
-                 driveToFromFirstLowJunction(driveToLow1Path);
+                    driveToFromFirstLowJunction(driveToLow1Path);
                 }
             }
         });
     }
 
-    private void decideWhichSignalWasSeen()
-    {
+    private void decideWhichSignalWasSeen() {
 
         if (detectedAprilTagID == SIGNAL_LEFT) {
             driveToSignalZone(leftPath);
@@ -179,18 +184,16 @@ public class javabotsAutoNextCone extends Robot {
     }
 
 
-    private void driveToFromFirstLowJunction(DeadReckonPath driveToLow1Path)
-    {
+    private void driveToFromFirstLowJunction(DeadReckonPath driveToLow1Path) {
         whereAmI.setValue("in driveToFromFirstLowJunction");
         RobotLog.i("drives to First Low Junction");
         gyroTask = new DeadReckonTaskWithIMU(this, driveToLow1Path, drivetrain)
-        //this.addTask(new DeadReckonTask(this, driveToLow1Path, drivetrain)
+                //this.addTask(new DeadReckonTask(this, driveToLow1Path, drivetrain)
         {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("finished parking");
                     if (goingToLowerJunction) {
                         lowerLiftToFirstLowJunction();
@@ -198,7 +201,7 @@ public class javabotsAutoNextCone extends Robot {
                     } else {
                         // have finished backing away from lower junction
                         // going to go Cone Stack
-                       driveToConeStack(coneStackPath);
+                       // lowerLiftBeforeConeStack();
                     }
                 }
             }
@@ -209,15 +212,13 @@ public class javabotsAutoNextCone extends Robot {
     }
 
 
-    public void lowerLiftToFirstLowJunction()
-    {
-        this.addTask(new DeadReckonTask(this, lowerLiftToLowJunctionPath, liftMotorDrivetrain){
+    public void lowerLiftToFirstLowJunction() {
+        this.addTask(new DeadReckonTask(this, lowerLiftToLowJunctionPath, liftMotorDrivetrain) {
 
             @Override
-            public void handleEvent (RobotEvent e){
+            public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("liftedToLowJunction");
 
                     coneServo.setPosition(CONE_RELEASE);
@@ -227,100 +228,127 @@ public class javabotsAutoNextCone extends Robot {
         });
     }
 
-    public void raiseLiftOffFirstLowJunction()
-    {
-        this.addTask(new DeadReckonTask(this, raiseLiftOffLowJunctionPath, liftMotorDrivetrain){
+    public void raiseLiftOffFirstLowJunction() {
+        this.addTask(new DeadReckonTask(this, raiseLiftOffLowJunctionPath, liftMotorDrivetrain) {
 
             @Override
-            public void handleEvent (RobotEvent e){
+            public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("liftedToLowJunction");
                     //driveToConeStack(coneStackPath);
                     driveToFromFirstLowJunction(driveFromLow1Path);
+                    lowerLiftBeforeConeStack();
 
                 }
             }
         });
     }
-
-    public void driveToConeStack(DeadReckonPath coneStackPath)
-    {
-        whereAmI.setValue("driveToConeStack");
-        RobotLog.i("drives to First Low Junction");
-
-        gyroTask = new DeadReckonTaskWithIMU(this, coneStackPath, drivetrain){
+    public void lowerLiftBeforeConeStack() {
+        this.addTask(new DeadReckonTask(this, lowerLiftBeforeConeStackPath, liftMotorDrivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("liftedToLoewJunction");
+                    driveToConeStack(coneStackPath);
+                }
+            }
+        });
+    }
+
+    public void driveToConeStack(DeadReckonPath coneStackPath) {
+        whereAmI.setValue("driveToConeStack");
+        RobotLog.i("drives to First Low Junction");
+
+        gyroTask = new DeadReckonTaskWithIMU(this, coneStackPath, drivetrain) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
                     // lowers lift for the first time to the cone stack
+                    driveCloserToConeStack(coneStackCloserPath);
+                   //raises than lowers lift to cone stack
                     lowerLiftToConeStackFirst();
                 }
             }
         };
         gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
         gyroTask.initTelemetry(this.telemetry);
+        //gyroTask.useSmoothStart(true);
+        addTask(gyroTask);
+    }
+    public void driveCloserToConeStack(DeadReckonPath coneStackCloserPath) {
+        whereAmI.setValue("driveToConeStack");
+        RobotLog.i("drives to First Low Junction");
+
+        gyroTask = new DeadReckonTaskWithIMU(this, coneStackCloserPath, drivetrain) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
+                    // lowers lift for the first time to the cone stack
+                    //raiseLiftOffConeStackFirst();
+                    //  lowerLiftToConeStackFirst();
+                }
+            }
+        };
+        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+        gyroTask.initTelemetry(this.telemetry);
+        //gyroTask.useSmoothStart(true);
         addTask(gyroTask);
     }
 
 
+    public void lowerLiftToConeStackFirst() {
 
-    public void lowerLiftToConeStackFirst()
-    {
-
-        this.addTask(new DeadReckonTask(this, lowerLiftToConeStackPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, lowerLiftToConeStackPath, liftMotorDrivetrain) {
 
             @Override
-            public void handleEvent (RobotEvent e){
+            public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("liftedToLowJunction");
 
-                    coneServo.setPosition(CONE_GRAB);
+                 //   coneServo.setPosition(CONE_GRAB);
                     raiseLiftOffConeStackFirst();
+                    armServo.setPosition(ARM_FRONT);
                 }
             }
         });
     }
-    
-    public void raiseLiftOffConeStackFirst()
-    {
 
-        this.addTask(new DeadReckonTask(this, raiseLiftOffConeStackPath, liftMotorDrivetrain){
+    public void raiseLiftOffConeStackFirst() {
+
+        this.addTask(new DeadReckonTask(this, raiseLiftOffConeStackPath, liftMotorDrivetrain) {
 
             @Override
-            public void handleEvent (RobotEvent e){
+            public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("liftedToLowJunction");
 
-                    coneServo.setPosition(CONE_GRAB);
-
+                   coneServo.setPosition(CONE_GRAB);
+                   armServo.setPosition(ARM_FRONT);
                    // driveToFromFirstHighJunction(driveToHighJunctionPath);
                 }
             }
         });
     }
 
-    public void driveToFromFirstHighJunction(DeadReckonPath driveToHighJunctionPath)
-    {
+    public void driveToFromFirstHighJunction(DeadReckonPath driveToHighJunctionPath) {
         whereAmI.setValue("in driveToFromFirstLowJunction");
         RobotLog.i("drives to First Low Junction");
 
-        this.addTask(new DeadReckonTaskWithIMU(this, driveToHighJunctionPath, drivetrain){
+        this.addTask(new DeadReckonTaskWithIMU(this, driveToHighJunctionPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("finished parking");
                     if (goingToHighJunction) {
-                        raiseLiftToHighJunction();
+                       // raiseLiftToHighJunction();
+                        armServo.setPosition(ARM_BACK);
                         goingToHighJunction = false;
                     } else {
                         // cone has been put on high junction
@@ -331,52 +359,46 @@ public class javabotsAutoNextCone extends Robot {
         });
     }
 
-    public void raiseLiftToHighJunction()
-    {
+    public void raiseLiftToHighJunction() {
 
-        this.addTask(new DeadReckonTask(this, raiseLiftToHighJunctionPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, raiseLiftToHighJunctionPath, liftMotorDrivetrain) {
 
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("liftedToLowJunction");
-
-                    lowerLiftToHighJunction();
-
-                }
-            }
-        });
-    }
-
-    public void  lowerLiftToHighJunction()
-    {
-
-        this.addTask(new DeadReckonTask(this, lowerLiftToHighJunctionPath, liftMotorDrivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("liftedToLowJunction");
-                    coneServo.setPosition(CONE_RELEASE);
-                    driveToFromFirstHighJunction(driveFromHighJunctionPath);
-                }
-            }
-        });
-    }
-
-    public void driveToSignalZone(DeadReckonPath signalPath)
-    {
-        whereAmI.setValue("in driveToSignalZone");
-        RobotLog.i("drives straight onto the launch line");
-        gyroTask = new DeadReckonTaskWithIMU(this, signalPath, drivetrain){
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
-                {
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("liftedToLowJunction");
+
+                //    lowerLiftToHighJunction();
+
+                }
+            }
+        });
+    }
+
+    public void lowerLiftToHighJunction() {
+
+        this.addTask(new DeadReckonTask(this, lowerLiftToHighJunctionPath, liftMotorDrivetrain) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("liftedToLowJunction");
+                    coneServo.setPosition(CONE_RELEASE);
+                //    driveToFromFirstHighJunction(driveFromHighJunctionPath);
+                }
+            }
+        });
+    }
+
+    public void driveToSignalZone(DeadReckonPath signalPath) {
+        whereAmI.setValue("in driveToSignalZone");
+        RobotLog.i("drives straight onto the launch line");
+        gyroTask = new DeadReckonTaskWithIMU(this, signalPath, drivetrain) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
                     RobotLog.i("finished parking");
                 }
             }
@@ -386,18 +408,7 @@ public class javabotsAutoNextCone extends Robot {
         addTask(gyroTask);
     }
 
-//    public void delayAndLowerLift(int milliseconds)
-//    {
-//        addTask(new SingleShotTimerTask(this, 1000*milliseconds) {
-//            @Override
-//            public void handleEvent (RobotEvent e) {
-//                        lowerLiftToFirstLowJunction();
-//            }
-//        });
-//    }
-
-    public void initPaths()
-    {
+    public void initPaths() {
         driveToLow1Path = new DeadReckonPath();
         driveFromLow1Path = new DeadReckonPath();
         liftToLowJunctionPath = new DeadReckonPath();
@@ -412,9 +423,12 @@ public class javabotsAutoNextCone extends Robot {
         raiseLiftToHighJunctionPath = new DeadReckonPath();
         lowerLiftToHighJunctionPath = new DeadReckonPath();
 
+        lowerLiftBeforeConeStackPath = new DeadReckonPath();
+
         leftPath = new DeadReckonPath();
         middlePath = new DeadReckonPath();
-        rightPath= new DeadReckonPath();
+        rightPath = new DeadReckonPath();
+        coneStackCloserPath = new DeadReckonPath();
 
         driveToLow1Path.stop();
         driveFromLow1Path.stop();
@@ -422,12 +436,15 @@ public class javabotsAutoNextCone extends Robot {
         lowerLiftToLowJunctionPath.stop();
         raiseLiftOffLowJunctionPath.stop();
 
-
         lowerLiftToConeStackPath.stop();
         raiseLiftOffConeStackPath.stop();
         driveToHighJunctionPath.stop();
         raiseLiftToHighJunctionPath.stop();
         lowerLiftToHighJunctionPath.stop();
+
+        lowerLiftBeforeConeStackPath.stop();
+        coneStackCloserPath.stop();
+
 
         leftPath.stop();
         middlePath.stop();
@@ -436,39 +453,45 @@ public class javabotsAutoNextCone extends Robot {
 
 //        // drives to first low junction
 //        // strafe to left align with low junction
-        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,8, 0.45);
+        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4.5, 0.50);
 ////        // drive up to ground junction
         driveToLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.55);
 //
         // strife to the left
-        liftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.9);
+        liftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 1.0);
 
 //        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
 
-        lowerLiftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.9);
+        lowerLiftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -1.0);
 
-        raiseLiftOffLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.8);
+        raiseLiftOffLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 1.0);
 //        // back away from low junction
-        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5); //neg
+        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.6); //neg
 //
 
-        // random path ...
+        lowerLiftBeforeConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -1.0);
 
-       coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 8.4,  -0.50);
-       // coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 25,  -0.50);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 22.5,  0.8);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 25.5,  -0.50);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13,  0.50);
-      //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
-//
-//        // lower lift to cone stack
-        lowerLiftToConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9.5, -0.6); //distance or 8
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, 0.45);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.5);
+        // coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 25,  -0.50);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, 0.9);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 26, -0.40);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 16, 0.9);
+        //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5); //going to conestach
+        //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
+
+        coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7.2, 0.3);
+//        // raise and then lower lift to cone stack
+        lowerLiftToConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.9);
+        lowerLiftToConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, -0.9); //distance or 8
 //        // picked up cone lifting lift off of the stack
-         raiseLiftOffConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.6);
-        raiseLiftOffConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.6);
+         raiseLiftOffConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 1.0);
+          // raiseLiftOffConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 13, 0.9);
+//        raiseLiftOffConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.9);
 
         //drives to high junction
-       //  driveToHighJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.65);
+//        driveToHighJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.65);
+//        driveToHighJunctionPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2, 0.65);
 //        // lower lift to High Junction
 //        lowerLiftToHighJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.65);
 //        ///drives From HighJunction
@@ -497,10 +520,10 @@ public class javabotsAutoNextCone extends Robot {
     }
 
     @Override
-    public void init()
-    {
+    public void init() {
         // cindy added
         super.init();
+//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -544,16 +567,16 @@ public class javabotsAutoNextCone extends Robot {
         // initialized heading telemetry
         headingTlm = telemetry.addData("Current/target heading is: ", "0.0");
 
+
         whereAmI = telemetry.addData("location in code", "init");
-        tagIdTlm = telemetry.addData("tagId","none");
+        tagIdTlm = telemetry.addData("tagId", "none");
         initPaths();
 
 
     }
 
     @Override
-    public void start()
-    {
+    public void start() {
         liftToFirstLowJunction();
         whereAmI.setValue("in Start");
         setAprilTagDetection();
