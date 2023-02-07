@@ -87,7 +87,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
     private static final int RED_MED_LIFT_POSITION = 2300;
     private static final int GREEN_HIGH_LIFT_POSITION = 3100;
     // variable that controls lift motor speed because timeslice does not catch the color in time
-    private static final double LIFT_MOTOR_SPEED = 0.8;
+    private static final double LIFT_MOTOR_SPEED = 0.35;
 
     protected boolean liftMotorEnable = true;
 
@@ -163,7 +163,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         // since the gamesticks were switched for some reason and we need to do
         // more investigation
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
-        rgbColorSensorMotorTask = new RGBColorSensorMotorTask(this, colorSensor, liftMotor) {
+        rgbColorSensorMotorTask = new RGBColorSensorMotorTask(this, colorSensor, liftMotor, telemetry) {
             public void handleEvent(RobotEvent e) {
                 RGBColorSensorMotorTask.ColorSensorMotorEvent event = (RGBColorSensorMotorTask.ColorSensorMotorEvent) e;
                 switch(event.kind) {
