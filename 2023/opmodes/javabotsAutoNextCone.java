@@ -51,9 +51,10 @@ import team25core.FourWheelDirectIMUDrivetrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.Robot;
 import team25core.RobotEvent;
-import team25core.SingleShotTimerTask;
-import team25core.RGBColorSensorTask;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+
+import team25core.RunToEncoderValueTask;
+import team25core.sensors.color.RGBColorSensorTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 @Config
@@ -93,6 +94,11 @@ public class javabotsAutoNextCone extends Robot {
     public static double FORWARD_DISTANCE = 6;
     public static double DRIVE_SPEED = -0.5;
 
+    public static int REV_40_TO_1_COUNTS_PER_REV = 1120;
+    public static int REV_20_TO_1_COUNTS_PER_REV = 560;
+
+    public static int LOWER_LIFT_ENC_COUNTS = 2 * REV_40_TO_1_COUNTS_PER_REV;
+
     DeadReckonPath driveToLow1Path;
     DeadReckonPath driveFromLow1Path;
     DeadReckonPath liftToLowJunctionPath;
@@ -101,7 +107,6 @@ public class javabotsAutoNextCone extends Robot {
     DeadReckonPath lowerLiftToHighJunctionPath;
 
     DeadReckonPath coneStackPath;
-    DeadReckonPath lowerLiftToConeStackPath;
     DeadReckonPath raiseLiftOffConeStackPath1;
     DeadReckonPath raiseLiftOffConeStackPath2;
     boolean firstConeLift = true;
@@ -114,7 +119,7 @@ public class javabotsAutoNextCone extends Robot {
 
     DeadReckonPath coneStackToJunctionPath;
 
-
+    DeadReckonPath colorDetectionStrafePath;
 
 
     private BNO055IMU imu;
@@ -283,7 +288,8 @@ public class javabotsAutoNextCone extends Robot {
                 if (path.kind == EventKind.PATH_DONE) {
                     // as we're driving closer to the cone stack we're simultaneously lifting the lift
                     raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
-                    driveCloserToConeStack(coneStackCloserPath);
+                    colorDetectionStrafe();
+                   // driveCloserToConeStack(coneStackCloserPath);
 
                 }
             }
@@ -318,14 +324,11 @@ public class javabotsAutoNextCone extends Robot {
     public void lowerLiftToGrabConeOnStack() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        // we are lowering the lift to cone stack path
-        this.addTask(new DeadReckonTask(this, lowerLiftToConeStackPath, liftMotorDrivetrain) {
-
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, LOWER_LIFT_ENC_COUNTS, -0.5) {
             @Override
             public void handleEvent(RobotEvent e) {
-                DeadReckonEvent path = (DeadReckonEvent) e;
-                // when the path is done the lift has been lowered to grab the cone
-                if (path.kind == EventKind.PATH_DONE) {
+                RunToEncoderValueTask.RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
+                if (evt.kind == EventKind.DONE) {
                     RobotLog.i("liftedToLowJunction");
                     // MADDIEFIXME in this current code we're grabbing the cone and raising the
                     // lift at the same time. There is a possibility that we may be raising the lift
@@ -336,11 +339,11 @@ public class javabotsAutoNextCone extends Robot {
                     whereAmI.setValue("finished lowerLiftToConeStackPath");
                     raiseLiftOffConeStack(raiseLiftOffConeStackPath2);
                     //armServo.setPosition(ARM_FRONT);
-
                 }
             }
         });
     }
+
     public void driveFromConeStackToJunction() {
         whereAmI.setValue("driveFromConeStackToJunction");
 
@@ -361,6 +364,60 @@ public class javabotsAutoNextCone extends Robot {
         addTask(gyroTask);
     }
 
+    public void colorDetectionStrafe() {
+        whereAmI.setValue("colorDetectionStrafe");
+        handleColorSensor(colorDetectionStrafePath);
+        gyroTask = new DeadReckonTaskWithIMU(this, colorDetectionStrafePath, drivetrain) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                // when the path is done we have completed the driveCloserToConeStack
+                if (path.kind == EventKind.PATH_DONE) {
+                    driveCloserToConeStack(coneStackCloserPath);
+                }
+            }
+        };
+        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+        gyroTask.initTelemetry(this.telemetry);
+        //gyroTask.useSmoothStart(true);
+        addTask(gyroTask);
+    }
+
+    public void handleColorSensor (DeadReckonPath path) {
+        colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
+            public void handleEvent(RobotEvent e) {
+                RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
+                // sets threshold for blue, red, and green to ten thousand
+                // FIXME seems redundant, possibly remove; said twice
+                // colorSensorTask.setThresholds(10000, 10000, 5000);
+                // returns the color values for blue, red, and green
+                colorArray = colorSensorTask.getColors();
+                // shows the values of blue, red, green on the telemetry
+                blueDetectedTlm.setValue(colorArray[0]);
+                redDetectedTlm.setValue(colorArray[1]);
+                switch(event.kind) {
+                    // red is at the end
+                    case RED_DETECTED:
+                        //  colorSensorTask.suspend();
+                        //  hLift.setPower(0.0);
+                        //  state = LiftStates.DROPPING;
+                        path.stop();
+                        colorDetectedTlm.setValue("red");
+                        break;
+                    case BLUE_DETECTED:
+                        //  hLift.setPower(0.0);
+                        //  this.removeTask(colorSensorTask);
+                        path.stop();
+                        colorDetectedTlm.setValue("blue");
+                        //  state = LiftStates.LOWERING;
+                        break;
+                    default:
+                        colorDetectedTlm.setValue("none");
+                        break;
+                }
+            }
+        };
+    }
 
     public void raiseLiftOffConeStack(DeadReckonPath coneStackLiftPath) {
         whereAmI.setValue("in raiseLiftOffConeStack");
@@ -473,7 +530,6 @@ public class javabotsAutoNextCone extends Robot {
         raiseLiftOffLowJunctionPath = new DeadReckonPath();
 
         coneStackPath = new DeadReckonPath();
-        lowerLiftToConeStackPath = new DeadReckonPath();
         raiseLiftOffConeStackPath1 = new DeadReckonPath();
         raiseLiftOffConeStackPath2 = new DeadReckonPath();
         driveToHighJunctionPath = new DeadReckonPath();
@@ -489,13 +545,14 @@ public class javabotsAutoNextCone extends Robot {
         coneStackCloserPath = new DeadReckonPath();
         coneStackToJunctionPath = new DeadReckonPath();
 
+        colorDetectionStrafePath = new DeadReckonPath();
+
         driveToLow1Path.stop();
         driveFromLow1Path.stop();
         liftToLowJunctionPath.stop();
         lowerLiftToLowJunctionPath.stop();
         raiseLiftOffLowJunctionPath.stop();
 
-        lowerLiftToConeStackPath.stop();
         raiseLiftOffConeStackPath1.stop();
         raiseLiftOffConeStackPath2.stop();
         driveToHighJunctionPath.stop();
@@ -506,6 +563,7 @@ public class javabotsAutoNextCone extends Robot {
         coneStackCloserPath.stop();
         coneStackToJunctionPath.stop();
 
+        colorDetectionStrafePath.stop();
 
 
         leftPath.stop();
@@ -533,20 +591,19 @@ public class javabotsAutoNextCone extends Robot {
 
         lowerLiftBeforeConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -1.0);
 
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.3, 0.45);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.8, -0.4); //2 ,-.5
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3.5, 0.45); //6.3
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 0.8, -0.4); //2 ,-.5
         // coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 25,  -0.50);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 23.85, 0.9);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.35, -0.40);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 16, 0.9);
         //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5); //going to conestack
         //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
 
+
+        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 9, 0.5);
         // MADDIEFIXME adjust the drive closer path as necessary so it doesn't ram in to the cone stack
         coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.85, 0.3); //distance 7
-//
-        // MADDIEFIXME this lowers the lift to grab the cone, may need to ADJUST so the claw is in the cone
-        lowerLiftToConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.9); //distance or 8
 //
         // MADDIEFIXME raise the lift before the cone stack so it doesn't collide with it may need to ADJUST how high to raise the lift
         raiseLiftOffConeStackPath1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 1.0);
@@ -661,39 +718,41 @@ public class javabotsAutoNextCone extends Robot {
         whereAmI.setValue("in Start");
        // setAprilTagDetection();
        // addTask(detectionTask);
-        colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
-            public void handleEvent(RobotEvent e) {
-                RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
-                // sets threshold for blue, red, and green to ten thousand
-                // FIXME seems redundant, possibly remove; said twice
-                // colorSensorTask.setThresholds(10000, 10000, 5000);
-                // returns the color values for blue, red, and green
-                colorArray = colorSensorTask.getColors();
-                // shows the values of blue, red, green on the telemetry
-                blueDetectedTlm.setValue(colorArray[0]);
-                redDetectedTlm.setValue(colorArray[1]);
-                switch(event.kind) {
-                    // red is at the end
-                    case RED_DETECTED:
-                        //  colorSensorTask.suspend();
-                        //  hLift.setPower(0.0);
-                        //  state = LiftStates.DROPPING;
-                        colorDetectedTlm.setValue("red");
-                        break;
-                    case BLUE_DETECTED:
-                        //  hLift.setPower(0.0);
-                        //  this.removeTask(colorSensorTask);
-                        colorDetectedTlm.setValue("blue");
-                        //  state = LiftStates.LOWERING;
-                        break;
-                    default:
-                        colorDetectedTlm.setValue("none");
-                        break;
-                }
-            }
-        };
-        this.addTask(colorSensorTask);
-        colorSensorTask.setThresholds(10000, 10000, 5000);
+//        colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
+//            public void handleEvent(RobotEvent e) {
+//                RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
+//                // sets threshold for blue, red, and green to ten thousand
+//                // FIXME seems redundant, possibly remove; said twice
+//                // colorSensorTask.setThresholds(10000, 10000, 5000);
+//                // returns the color values for blue, red, and green
+//                colorArray = colorSensorTask.getColors();
+//                // shows the values of blue, red, green on the telemetry
+//                blueDetectedTlm.setValue(colorArray[0]);
+//                redDetectedTlm.setValue(colorArray[1]);
+//                switch(event.kind) {
+//                    // red is at the end
+//                    case RED_DETECTED:
+//                        //  colorSensorTask.suspend();
+//                        //  hLift.setPower(0.0);
+//                        //  state = LiftStates.DROPPING;
+//                        colorDetectedTlm.setValue("red");
+//                        colorDetectionStrafe();
+//                        break;
+//                    case BLUE_DETECTED:
+//                        //  hLift.setPower(0.0);
+//                        //  this.removeTask(colorSensorTask);
+//                        colorDetectedTlm.setValue("blue");
+//                        colorDetectionStrafe();
+//                        //  state = LiftStates.LOWERING;
+//                        break;
+//                    default:
+//                        colorDetectedTlm.setValue("none");
+//                        break;
+//                }
+//            }
+//        };
+//        this.addTask(colorSensorTask);
+//        colorSensorTask.setThresholds(10000, 10000, 5000);
 
 
     }
