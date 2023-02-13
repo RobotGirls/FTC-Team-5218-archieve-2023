@@ -51,7 +51,7 @@ import team25core.StandardFourMotorRobot;
 import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
 
-import team25core.RGBColorSensorTask;
+import team25core.sensors.color.RGBColorSensorTask;
 
 import team25core.SingleShotColorSensorTask;
 
