@@ -55,7 +55,7 @@ import team25core.sensors.color.RGBColorSensorTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 @Config
-@Autonomous(name = "javabotsAutoILT")
+@Autonomous(name = "javabotsAutoILT8")
 //@Disabled
 public class javabotsAutoILT extends Robot {
 
@@ -96,6 +96,15 @@ public class javabotsAutoILT extends Robot {
 
     //public static int LOWER_LIFT_ENC_COUNTS = 2 * REV_40_TO_1_COUNTS_PER_REV;
     public static int LOWER_LIFT_ENC_COUNTS = REV_20_TO_1_COUNTS_PER_REV;
+
+    public static double  CONE_STACK_SIDEWAYS_1 = 7;
+    public static double CONE_STACK_STRAIGHT_FORWARD_1 = 10;
+    public static double CONE_STACK_STRAIGHT_BACK_1 = 2.5;
+    public static double CONE_STACK_STRAIGHT_FORWARD_2 = 28;
+    public static double CONE_STACK_STRAIGHT_BACK_2 = 2;
+    public static double CONE_STACK_STRAIGHT_FWD_SPEED_2 = 0.8;
+
+    public static double TARGET_YAW_FOR_NEW_DIRECTION = -90;
 
 
     DeadReckonPath driveToLow1Path;
@@ -171,6 +180,7 @@ public class javabotsAutoILT extends Robot {
                 tagIdTlm.setValue(tagObject.id);
                 whereAmI.setValue("in handleEvent");
                 detectedAprilTagID = tagObject.id;
+                detectionTask.stop();
             }
         };
         whereAmI.setValue("setAprilTagDetection");
@@ -180,7 +190,7 @@ public class javabotsAutoILT extends Robot {
     public void liftToFirstLowJunction() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1460 , 1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1900 , 1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
@@ -229,14 +239,17 @@ public class javabotsAutoILT extends Robot {
                     } else {
                         // have finished backing away from lower junction
                         // going to go Cone Stack
-                       // lowerLiftBeforeConeStack();
+//                        raiseLiftOffFirstLowJunction();
+                        lowerLiftBeforeConeStack();
                     }
                 }
             }
         };
-        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
-        gyroTask.initTelemetry(this.telemetry);
-        addTask(gyroTask);
+//        if (goingToLowerJunction) {
+            gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+            gyroTask.initTelemetry(this.telemetry);
+            addTask(gyroTask);
+//        }
     }
 
 
@@ -244,16 +257,12 @@ public class javabotsAutoILT extends Robot {
     public void lowerLiftToFirstLowJunction() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 730 , -1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1000 , -1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("liftedToLowJunction");
-                    // MADDIEFIXME in this current code we're grabbing the cone and raising the
-                    // lift at the same time. There is a possibility that we may be raising the lift
-                    // before the claw can fully extend. In that case we may have to put a delay
-                    // before the lift so we may need to delay.
                     coneServo.setPosition(CONE_RELEASE);
                     raiseLiftOffFirstLowJunction();
 
@@ -263,24 +272,17 @@ public class javabotsAutoILT extends Robot {
         });
     }
 
-
-
-
     public void raiseLiftOffFirstLowJunction() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 100 , 1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1000 , 1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("liftedToLowJunction");
-                    // MADDIEFIXME in this current code we're grabbing the cone and raising the
-                    // lift at the same time. There is a possibility that we may be raising the lift
-                    // before the claw can fully extend. In that case we may have to put a delay
-                    // before the lift so we may need to delay.
                     driveToFromFirstLowJunction(driveFromLow1Path);
-                    lowerLiftBeforeConeStack();
+                  //  lowerLiftBeforeConeStack();
 
                     //armServo.setPosition(ARM_FRONT);
                 }
@@ -292,7 +294,7 @@ public class javabotsAutoILT extends Robot {
     public void lowerLiftBeforeConeStack() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 100 , -1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1000 , -1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
@@ -322,8 +324,9 @@ public class javabotsAutoILT extends Robot {
                 // when path done we are approximatly a foot away from the cone stack
                 if (path.kind == EventKind.PATH_DONE) {
                     // as we're driving closer to the cone stack we're simultaneously lifting the lift
-                    raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
-                    colorDetectionStrafe();
+                    // drivetrain.setTargetYaw(TARGET_YAW_FOR_NEW_DIRECTION);
+//                    raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
+                       colorDetectionStrafe();
                    // driveCloserToConeStack(coneStackCloserPath);
 
                 }
@@ -334,6 +337,8 @@ public class javabotsAutoILT extends Robot {
         //gyroTask.useSmoothStart(true);
         addTask(gyroTask);
     }
+
+
     public void driveCloserToConeStack(DeadReckonPath coneStackCloserPath) {
         whereAmI.setValue("driveToConeStack");
         RobotLog.i("drives to First Low Junction");
@@ -390,19 +395,23 @@ public class javabotsAutoILT extends Robot {
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 // when the path is done we have completed the driveCloserToConeStack
                 if (path.kind == EventKind.PATH_DONE) {
-                    driveCloserToConeStack(coneStackCloserPath);
+                    // FIXME add driveCloserToConeStack
+                  //  driveCloserToConeStack(coneStackCloserPath);
                 }
             }
         };
         gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
-        gyroTask.initTelemetry(this.telemetry);
+        // FIXME Add the initTlm back in
+//        gyroTask.initTelemetry(this.telemetry);
         //gyroTask.useSmoothStart(true);
         addTask(gyroTask);
     }
 
     public void handleColorSensor () {
+        whereAmI.setValue("handleColorSensor");
         colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
             public void handleEvent(RobotEvent e) {
+                whereAmI.setValue("handleColorSensor handleEvent");
                 ColorSensorEvent event = (ColorSensorEvent) e;
                 colorArray = colorSensorTask.getColors();
                 blueDetectedTlm.setValue(colorArray[0]);
@@ -466,7 +475,7 @@ public class javabotsAutoILT extends Robot {
                 // when the path is done we have completed the driveCloserToConeStack
                 if (path.kind == EventKind.PATH_DONE) {
                     raiseLiftOffConeStack(raiseLiftOffConeStackPath2);
-                    lowerLiftTo2ndLowJunctionPath();
+                   // lowerLiftTo2ndLowJunctionPath();
                     //do nothing here
                 }
             }
@@ -563,36 +572,28 @@ public class javabotsAutoILT extends Robot {
 
 //        // drives to first low junction
 //        // strafe to left align with low junction
-        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4.5, 0.50);
+        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5.4, 0.50);
 ////        // drive up to ground junction
-        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.55);
-//
-        // lift to low junction
-        liftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 1.0);
+        driveToLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.55);
 
-//        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.55);
 
-        lowerLiftToLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -1.0);
 
-        raiseLiftOffLowJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 1.0);
 //        // back away from low junction
-        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.6); //neg
+       // driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.6); //neg
 //
-
-        lowerLiftBeforeConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -1.0);
-
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 6.4, - 0.45); //6.3
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2.5, -0.4); //2 ,-.5
-        // coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 25,  -0.50);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 28, 1);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.9);
+       // coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.0, -0.55);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, CONE_STACK_SIDEWAYS_1, -0.45); //6.3
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_1, -0.45); //2 ,-.5
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_FORWARD_2, CONE_STACK_STRAIGHT_FWD_SPEED_2);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_2, -0.9);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7, 0.9);
         //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5); //going to conestack
         //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
 
 
-        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 9, 0.45);
+        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.2);
         // strafes to the tape
         // MADDIEFIXME adjust the drive closer path as necessary so it doesn't ram in to the cone stack
         coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.85, 0.3); //distance 7
@@ -603,7 +604,7 @@ public class javabotsAutoILT extends Robot {
         // MADDIEFIXME raise the lift in order to lift the cone above the cone stack
         raiseLiftOffConeStackPath2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 1.0);
 
-        // MADDIEFIXME drive back to the lower junction may have to adust the distance
+        // MADDIEFIXME drive back to the lower junction may have to adjust the distance
         coneStackToJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3.2, -0.5);
         coneStackToJunctionPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 3.2, -0.5);
 
@@ -660,7 +661,7 @@ public class javabotsAutoILT extends Robot {
         // We are setting the target yaw to the value of the constant
         // TARGET_YAW_FOR_DRIVING_STRAIGHT which is zero for our robot to
         // go straight.
-        drivetrain.setTarget(TARGET_YAW_FOR_DRIVING_STRAIGHT);
+        drivetrain.setTargetYaw(TARGET_YAW_FOR_DRIVING_STRAIGHT);
 
         liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
         liftMotorDrivetrain.resetEncoders();
@@ -685,10 +686,12 @@ public class javabotsAutoILT extends Robot {
 
     @Override
     public void start() {
-        liftToFirstLowJunction();
+        // FIXME starting from color sensor
+       // liftToFirstLowJunction();
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
+        colorDetectionStrafe();
     }
 }
 
