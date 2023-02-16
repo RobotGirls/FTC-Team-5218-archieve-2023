@@ -145,6 +145,7 @@ public class javabotsAutoILT extends Robot {
     //private double tagID;
     private Telemetry.Item colorDetectedTlm;
     private Telemetry.Item redDetectedTlm;
+    private Telemetry.Item greenDetectedTlm;
     private Telemetry.Item blueDetectedTlm;
     private Telemetry.Item whereAmI;
 
@@ -416,6 +417,7 @@ public class javabotsAutoILT extends Robot {
                 colorArray = colorSensorTask.getColors();
                 blueDetectedTlm.setValue(colorArray[0]);
                 redDetectedTlm.setValue(colorArray[1]);
+                greenDetectedTlm.setValue(colorArray[2]);
                 switch(event.kind) {
                     // red is at the end
                     case RED_DETECTED:
@@ -432,6 +434,9 @@ public class javabotsAutoILT extends Robot {
                 }
             }
         };
+        colorSensorTask.setThresholds(10000, 10000, 5000);
+        colorSensorTask.setDrivetrain(drivetrain);
+        addTask(colorSensorTask);
     }
 
     public void raiseLiftOffConeStack(DeadReckonPath coneStackLiftPath) {
@@ -677,6 +682,7 @@ public class javabotsAutoILT extends Robot {
 
         blueDetectedTlm = telemetry.addData("blue color sensor value", 0);
         redDetectedTlm = telemetry.addData("red color sensor value", 0);
+        greenDetectedTlm = telemetry.addData("green color sensor value", 0);
 
         whereAmI = telemetry.addData("location in code", "init");
         tagIdTlm = telemetry.addData("tagId", "none");
@@ -686,12 +692,11 @@ public class javabotsAutoILT extends Robot {
 
     @Override
     public void start() {
-        // FIXME starting from color sensor
-       // liftToFirstLowJunction();
+        liftToFirstLowJunction();
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
-        colorDetectionStrafe();
+       // colorDetectionStrafe();
     }
 }
 
