@@ -688,7 +688,7 @@ public class javabotsAutoNextCone extends Robot {
         // We are setting the target yaw to the value of the constant
         // TARGET_YAW_FOR_DRIVING_STRAIGHT which is zero for our robot to
         // go straight.
-        drivetrain.setTarget(TARGET_YAW_FOR_DRIVING_STRAIGHT);
+        drivetrain.setTargetYaw(TARGET_YAW_FOR_DRIVING_STRAIGHT);
 
         liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
         liftMotorDrivetrain.resetEncoders();
