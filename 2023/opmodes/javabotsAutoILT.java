@@ -212,15 +212,13 @@ public class javabotsAutoILT extends Robot {
     }
 
     private void decideWhichSignalWasSeen() {
-
-        driveToSignalZone(rightPath);
-//        if (detectedAprilTagID == SIGNAL_LEFT) {
-//            driveToSignalZone(leftPath);
-//        } else if (detectedAprilTagID == SIGNAL_MIDDLE) {
-//            driveToSignalZone(middlePath);
-//        } else {
-//            driveToSignalZone(rightPath);
-//        }
+        if (detectedAprilTagID == SIGNAL_LEFT) {
+            driveToSignalZone(leftPath);
+        } else if (detectedAprilTagID == SIGNAL_MIDDLE) {
+            driveToSignalZone(middlePath);
+        } else {
+            driveToSignalZone(rightPath);
+        }
     }
 
 
@@ -398,6 +396,7 @@ public class javabotsAutoILT extends Robot {
                 // when the path is done we have completed the driveCloserToConeStack
                 if (path.kind == EventKind.PATH_DONE) {
                     // FIXME add driveCloserToConeStack
+                    armServo.setPosition(ARM_FRONT);
                   //  raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
                  //   driveCloserToConeStack(coneStackCloserPath);
                 }
@@ -463,7 +462,7 @@ public class javabotsAutoILT extends Robot {
                        //coneServo.setPosition(CONE_GRAB);
                        // driveCloserToConeStack(coneStackCloserPath);
                        // driveCloserToConeStack();
-//                        decideWhichSignalWasSeen();
+                         decideWhichSignalWasSeen();
                         firstConeLift = false;
                     } else {
                         // at this point we have already lifted the cone off the cone stack
@@ -544,7 +543,7 @@ public class javabotsAutoILT extends Robot {
     public void driveToSignalZone(DeadReckonPath signalPath) {
         whereAmI.setValue("in driveToSignalZone");
         RobotLog.i("drives straight onto the launch line");
-        gyroTask = new DeadReckonTaskWithIMU(this, coneStackToJunctionPath, drivetrain) {
+        gyroTask = new DeadReckonTaskWithIMU(this, signalPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -633,7 +632,7 @@ public class javabotsAutoILT extends Robot {
         colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.2);
         // strafes to the tape
         // MADDIEFIXME adjust the drive closer path as necessary so it doesn't ram in to the cone stack
-        coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2.5, 0.2); //distance 7
+        coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.25); //distance 7
 //
         // MADDIEFIXME raise the lift before the cone stack so it doesn't collide with it may need to ADJUST how high to raise the lift
         raiseLiftOffConeStackPath1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
@@ -650,16 +649,17 @@ public class javabotsAutoILT extends Robot {
 
          // Stays in first parking spot
       //  leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, - 0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,30, -0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,1.0, -1);
 
         // return to initial then go forward
        // middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 30, -1);
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -1);
         ;
         // return to initial then go forward then right
         // strafe to right
        // rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 50, -1);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.0, -1);
+        //30
     }
 
     @Override
@@ -727,7 +727,6 @@ public class javabotsAutoILT extends Robot {
     public void start() {
 
         liftToFirstLowJunction();
-
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
