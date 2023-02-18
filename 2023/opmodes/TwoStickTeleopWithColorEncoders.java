@@ -35,8 +35,6 @@ package opmodes;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -48,17 +46,14 @@ import team25core.MechanumGearedDrivetrain;
 import team25core.OneWheelDriveTask;
 import team25core.RobotEvent;
 import team25core.StandardFourMotorRobot;
-import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
-
-import team25core.sensors.color.RGBColorSensorTask;
+import team25core.TwoStickMechanumControlScheme;
 import team25core.sensors.color.RGBColorSensorMotorTask;
+import team25core.sensors.color.RGBColorSensorTask;
 
-import team25core.sensors.color.SingleShotColorSensorTask;
-
-@TeleOp(name = "TwoStickTeleopWithColorSensor")
+@TeleOp(name = "TwoStickTeleopWithColorEncoders")
 //@Disabled
-public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
+public class TwoStickTeleopWithColorEncoders extends StandardFourMotorRobot {
 
     private TeleopDriveTask drivetask;
 
@@ -164,7 +159,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         drivetask = new TeleopDriveTask(this, scheme, frontLeft, frontRight, backLeft, backRight);
         rgbColorSensorMotorTask = new RGBColorSensorMotorTask(this, colorSensor, liftMotor, telemetry) {
             public void handleEvent(RobotEvent e) {
-                RGBColorSensorMotorTask.ColorSensorMotorEvent event = (RGBColorSensorMotorTask.ColorSensorMotorEvent) e;
+                ColorSensorMotorEvent event = (ColorSensorMotorEvent) e;
                 switch(event.kind) {
                     case GOT_TO_BLUE:
                         liftMotorEnable = true;
@@ -212,7 +207,7 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
         this.addTask(drivetask);
         colorSensorTask = new RGBColorSensorTask(this, colorSensor) {
             public void handleEvent(RobotEvent e) {
-                RGBColorSensorTask.ColorSensorEvent event = (RGBColorSensorTask.ColorSensorEvent) e;
+                ColorSensorEvent event = (ColorSensorEvent) e;
                 // sets threshold for blue, red, and green to ten thousand
                 // FIXME seems redundant, possibly remove; said twice
                 // colorSensorTask.setThresholds(10000, 10000, 5000);
@@ -289,36 +284,39 @@ public class TwoStickTeleopWithColorSensor extends StandardFourMotorRobot {
 
                     case BUTTON_X_DOWN:
                         //position 0
-                         rgbColorSensorMotorTask.gotoBlue();
+                         //  rgbColorSensorMotorTask.gotoBlue();
                          liftMotorEnable = false;
-                        // liftMotor.setTargetPosition(BLUE_LOW_LIFT_POSITION);
-                        // liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        //liftMotor.setPower(0.75);
-//                        while (liftMotor.isBusy()) {}
-//                        liftMotor.setPower(0);
-//                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                        liftMotor.setTargetPosition(BLUE_LOW_LIFT_POSITION);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_B_DOWN:
                         //position 1
-                        rgbColorSensorMotorTask.gotoRed();
+                        //  rgbColorSensorMotorTask.gotoRed();
                         liftMotorEnable = false;
-//                        liftMotor.setTargetPosition(RED_MED_LIFT_POSITION);
-//                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                        liftMotor.setPower(0.75);
-//                        while (liftMotor.isBusy()) {}
-//                        liftMotor.setPower(0);
-//                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                        liftMotor.setTargetPosition(RED_MED_LIFT_POSITION);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_A_DOWN:
                         //position 1
-                        rgbColorSensorMotorTask.gotoGreen();
+                        //  rgbColorSensorMotorTask.gotoGreen();
                         liftMotorEnable = false;
-//                        liftMotor.setTargetPosition(GREEN_HIGH_LIFT_POSITION);
-//                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                        liftMotor.setPower(0.75);
-//                        while (liftMotor.isBusy()) {}
-//                        liftMotor.setPower(0);
-//                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                        liftMotor.setTargetPosition(GREEN_HIGH_LIFT_POSITION);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        liftMotor.setPower(0.75);
+                        while (liftMotor.isBusy()) {}
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         break;
                     case BUTTON_Y_DOWN:
                         //position 0 (original pos)

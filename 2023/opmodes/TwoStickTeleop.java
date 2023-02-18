@@ -161,8 +161,9 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
 
                 switch (gamepadEvent.kind) {
                     case BUTTON_X_DOWN:
-                        // If slow, then normal speed. If fast, then slow speed of motors.
-                        //pertains to slowmode
+                        // If slow, then normal speed.
+                        // If fast, then slow speed of motors.
+                        //pertains to slow mode
                         if (currentlySlow) {
                             drivetask.slowDown(0.7);
                             currentlySlow = false;
