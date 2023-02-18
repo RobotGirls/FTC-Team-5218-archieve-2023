@@ -55,9 +55,9 @@ import team25core.sensors.color.RGBColorSensorTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 @Config
-@Autonomous(name = "javabotsAutoILT8")
+@Autonomous(name = "javabotsAutoBackUp")
 //@Disabled
-public class javabotsAutoILT extends Robot {
+public class javabotsAutoILTBackUp extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;

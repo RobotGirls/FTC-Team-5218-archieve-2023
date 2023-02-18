@@ -101,7 +101,7 @@ public class javabotsAutoILT extends Robot {
     public static double CONE_STACK_STRAIGHT_FORWARD_1 = 10;
     public static double CONE_STACK_STRAIGHT_BACK_1 = 2.5;
     public static double CONE_STACK_STRAIGHT_FORWARD_2 = 28;
-    public static double CONE_STACK_STRAIGHT_BACK_2 = 2;
+    public static double CONE_STACK_STRAIGHT_BACK_2 = 2.3;
     public static double CONE_STACK_STRAIGHT_FWD_SPEED_2 = 0.8;
 
     public static double TARGET_YAW_FOR_NEW_DIRECTION = -90;
@@ -612,7 +612,7 @@ public class javabotsAutoILT extends Robot {
 ////        // drive up to ground junction
         driveToLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.55);
 
-        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.55);
+        driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.65);
 
 
 //        // back away from low junction
@@ -624,12 +624,12 @@ public class javabotsAutoILT extends Robot {
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_FORWARD_2, CONE_STACK_STRAIGHT_FWD_SPEED_2);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_2, -0.9);
         coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 7, 0.9);
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
         //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5); //going to conestack
         //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
 
 
-        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.2);
+        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.4);
         // strafes to the tape
         // MADDIEFIXME adjust the drive closer path as necessary so it doesn't ram in to the cone stack
         coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.25); //distance 7
@@ -649,16 +649,19 @@ public class javabotsAutoILT extends Robot {
 
          // Stays in first parking spot
       //  leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, - 0.5);
-        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,1.0, -1);
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 0.70, -1);
 
         // return to initial then go forward
        // middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, -1);
+        middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,10, -1);
         ;
         // return to initial then go forward then right
         // strafe to right
        // rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.0, -1);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 24, -0.6);
+     //   rightPath.addSegment(DeadReckonPath.SegmentType.TURN, 2, -0.75);
+
+
         //30
     }
 
