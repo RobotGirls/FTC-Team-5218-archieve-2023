@@ -52,10 +52,7 @@ import team25core.TwoStickMechanumControlScheme;
 import team25core.TeleopDriveTask;
 
 import team25core.sensors.color.RGBColorSensorTask;
-<<<<<<< Updated upstream
-=======
 import team25core.sensors.color.RGBColorSensorMotorTask;
->>>>>>> Stashed changes
 
 import team25core.sensors.color.SingleShotColorSensorTask;
 
