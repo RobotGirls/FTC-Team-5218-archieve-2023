@@ -66,7 +66,8 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
     private static final double CONE_RELEASE = 1.00;
 
     private static final double ARM_FRONT = 0.875;
-    private static final double ARM_BACK = 0.0918;
+    private static final double ARM_BACK = 0.089;
+    //0.0918
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
