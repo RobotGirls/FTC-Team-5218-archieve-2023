@@ -303,6 +303,7 @@ public class javabotsLM1Auto extends Robot {
 
         // drives to first ground junction
         // straife to left align with ground junction
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2.5, 0.5);
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, 0.5);
         // back to align with wall since straife drifts
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
@@ -318,7 +319,7 @@ public class javabotsLM1Auto extends Robot {
 
 
         // lifts to small junction
-        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.7);
+        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, 0.7);
 
 
         // lowers lift to the Ground Junction
