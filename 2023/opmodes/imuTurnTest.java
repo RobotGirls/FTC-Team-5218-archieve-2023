@@ -79,6 +79,11 @@ public class imuTurnTest extends Robot {
     private boolean usingSmoothStart = false;
     private boolean isUsingImuTurns = true;
     private Telemetry.Item targetYawTlm;
+    Telemetry.Item currentYawTlm;
+    Telemetry.Item yawErrorTlm;
+
+    public static double TURN_AMOUNT = 180;
+
 
     Telemetry.Item imuStatusTlm;
     Telemetry.Item imuCalibTlm;
@@ -89,7 +94,11 @@ public class imuTurnTest extends Robot {
     Telemetry.Item imuGravTlm;
 
     Telemetry.Item segmentTypeTlm;
+    Telemetry.Item codeLocation;
+    Telemetry.Item deltaHeadingTlm;
 
+    Telemetry.Item hitTargetHeadingTlm;
+    Telemetry.Item hitHeadingTlm;
 
     //ColorSensor
     protected RGBColorSensorTask colorSensorTask;
@@ -185,7 +194,8 @@ public class imuTurnTest extends Robot {
         };
         gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
         gyroTask.initTelemetry(imuCalibTlm, imuGravTlm, imuRollTlm, imuPitchTlm, imuHeadingTlm,
-                imuStatusTlm, imuYawRateTlm, whereAmI, segmentTypeTlm);
+                imuStatusTlm, imuYawRateTlm, whereAmI, segmentTypeTlm, codeLocation, deltaHeadingTlm,
+                hitTargetHeadingTlm,hitHeadingTlm);
         addTask(gyroTask);
     }
 
@@ -242,7 +252,12 @@ public class imuTurnTest extends Robot {
         //Drive to medium junction
       // driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.55);
         //need to turn based on heading
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN_WITH_IMU, 90, 0.55);
+
+      //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.55);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN_WITH_IMU, TURN_AMOUNT, 0.55);
+      //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -0.55);
+      //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5, 0.55);
+
         //drive from medium
        // driveFromMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.65);
 
@@ -274,7 +289,11 @@ public class imuTurnTest extends Robot {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         targetYawTlm = telemetry.addData("target yaw", "none");
-        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight, frontLeft, backLeft, targetYawTlm);
+        currentYawTlm = telemetry.addData("current yaw", "none");
+        yawErrorTlm = telemetry.addData("yaw error", "none");
+
+        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight,
+                frontLeft, backLeft, targetYawTlm, yawErrorTlm, currentYawTlm);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
@@ -307,12 +326,16 @@ public class imuTurnTest extends Robot {
 
         //Telemetry
         headingTlm = telemetry.addData("Current/target heading is: ", "0.0");
+        codeLocation = telemetry.addData("Code Location is ", "none");
+        deltaHeadingTlm = telemetry.addData("Delta Heading", "none");
 //        colorDetectedTlm = telemetry.addData("color detected", "unknown");
 //
 //        blueDetectedTlm = telemetry.addData("blue color sensor value", 0);
 //        redDetectedTlm = telemetry.addData("red color sensor value", 0);
 //        greenDetectedTlm = telemetry.addData("green color sensor value", 0);
 
+        hitTargetHeadingTlm = telemetry.addData("Hit Target Heading", "none");
+        hitHeadingTlm = telemetry.addData("Hit Heading", "none");
         whereAmI = telemetry.addData("location in code", "init");
         tagIdTlm = telemetry.addData("tagId", "none");
         initPaths();
