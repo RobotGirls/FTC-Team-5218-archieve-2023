@@ -183,8 +183,9 @@ public class javabotsRegRight extends Robot {
             }
         };
         gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
-        gyroTask.initTelemetry(imuCalibTlm, imuGravTlm, imuRollTlm, imuPitchTlm, imuHeadingTlm,
-                imuStatusTlm, imuYawRateTlm, whereAmI, segmentTypeTlm);
+        // FIXME add back in
+//        gyroTask.initTelemetry(imuCalibTlm, imuGravTlm, imuRollTlm, imuPitchTlm, imuHeadingTlm,
+//                imuStatusTlm, imuYawRateTlm, whereAmI, segmentTypeTlm);
         addTask(gyroTask);
     }
 
@@ -273,7 +274,8 @@ public class javabotsRegRight extends Robot {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         targetYawTlm = telemetry.addData("target yaw", "none");
-        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight, frontLeft, backLeft, targetYawTlm);
+        //FIXME add back in
+//        drivetrain = new FourWheelDirectIMUDrivetrain(frontRight, backRight, frontLeft, backLeft, targetYawTlm);
         drivetrain.resetEncoders();
         drivetrain.encodersOn();
 
