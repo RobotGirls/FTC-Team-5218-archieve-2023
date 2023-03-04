@@ -74,7 +74,7 @@ public class imuTurnTest extends Robot {
     private BNO055IMU imu;
     private DeadReckonTaskWithIMUTurn gyroTask;
     private Telemetry.Item headingTlm;
-    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 0.0;
+    private static final double TARGET_YAW_FOR_DRIVING_STRAIGHT = 90.0;
     private boolean showHeading = true;
     private boolean usingSmoothStart = false;
     private boolean isUsingImuTurns = true;
@@ -82,7 +82,7 @@ public class imuTurnTest extends Robot {
     Telemetry.Item currentYawTlm;
     Telemetry.Item yawErrorTlm;
 
-    public static double TURN_AMOUNT = 180;
+    public static double TURN_AMOUNT = 75;
 
 
     Telemetry.Item imuStatusTlm;
@@ -134,7 +134,7 @@ public class imuTurnTest extends Robot {
         imuGravTlm = telemetry.addData("Grav", "none");
         segmentTypeTlm = telemetry.addData("segmentType", "none");
         telemetry.setMsTransmissionInterval(100);
-        // FIXME potentially restor transmission interval
+        // FIXME potentially restore transmission interval
 
     }
 
@@ -256,7 +256,7 @@ public class imuTurnTest extends Robot {
       //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, 0.55);
         driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN_WITH_IMU, TURN_AMOUNT, 0.55);
       //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, -0.55);
-      //  driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5, 0.55);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 10  , 0.55);
 
         //drive from medium
        // driveFromMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.65);

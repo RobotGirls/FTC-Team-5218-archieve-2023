@@ -51,10 +51,10 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsLM1Auto5")
+@Autonomous(name = "javabotsLM1AutoLeft")
 //@Disabled
 //@Config
-public class javabotsLM1Auto extends Robot {
+public class javabotsLM1AutoLeft extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -313,7 +313,7 @@ public class javabotsLM1Auto extends Robot {
         // back away from low junction
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
         // strife to the left
-        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, - 0.5);
         // back up to align with the wall
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, -0.5);
 
