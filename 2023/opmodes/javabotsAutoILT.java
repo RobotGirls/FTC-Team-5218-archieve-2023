@@ -198,7 +198,7 @@ public class javabotsAutoILT extends Robot {
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("liftedToLowJunction");
                     // MADDIEFIXME in this current code we're grabbing the cone and raising the
-                    // lift at the same time. There is a possibility that we may be raising the lift
+                   // lift at the same time. There is a possibility that we may be raising the lift
                     // before the claw can fully extend. In that case we may have to put a delay
                     // before the lift so we may need to delay.
 

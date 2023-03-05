@@ -81,9 +81,26 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
 
     private static final double ARM_FRONT = .875;
     private static final double ARM_BACK = 0.0918;
+
+    public static double STRAFE_FROM_MEDIUM_JUNCTION = 5.5;
+
+    public static double STRAIGHT_TO_CONE_STACK = 4;
+
+    public static double DRIVE_FROM_MEDIUM_JUNCTION = 2.5;
+
+    public static double DRIVE_CLOSER_TO_CONE_STACK = 8;
+    public static int LOWER_LIFT_TO_CONE_STACK = 75;
+
+    public static int DRIVE_FROM_CONE_STACK = 10;
+
+
+
+
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
+
+    private DeadReckonPath coneStrafePath;
 
     public static int SIGNAL_LEFT = 5;
     public static int SIGNAL_MIDDLE = 2;
@@ -119,6 +136,8 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     DeadReckonPath coneStackPath;
     DeadReckonPath raiseLiftOffConeStackPath1;
     DeadReckonPath raiseLiftOffConeStackPath2;
+
+    DeadReckonPath driveFromConeStackPath;
     boolean firstConeLift = true;
     DeadReckonPath driveToHighJunctionPath;
     DeadReckonPath driveFromHighJunctionPath;
@@ -224,7 +243,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     }
 
 
-    private void driveToFromMediumJunction(DeadReckonPath driveToMedium1Path) {
+    private void driveToMediumJunction(DeadReckonPath driveToMedium1Path) {
         whereAmI.setValue("in driveToFromMediumJunction");
         RobotLog.i("drives to First Medium Junction");
         gyroTask = new DeadReckonTaskWithIMU(this, driveToMedium1Path, drivetrain)
@@ -259,7 +278,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     public void raiseLiftToMediumJunction() {
         whereAmI.setValue("in raiseLiftToMediumJunction");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 2500 , 1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 2650 , 1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
@@ -300,7 +319,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     public void lowerLiftToFirstMediumJunction() {
         whereAmI.setValue("in lowerLiftToFirstMediumJunction");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 200 , -1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 850 , -1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
@@ -320,7 +339,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     public void raiseLiftOffFirstMediumJunction() {
         whereAmI.setValue("in raiseLiftOffFirstMediumJunction");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 200 , 1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, 600 , 1) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
@@ -328,6 +347,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
                     RobotLog.i("raiseLiftOffFirstMediumJunction");
                    // driveToFromFirstLowJunction(driveFromLow1Path);
                     armServo.setPosition(ARM_FRONT);
+                    lowerLiftBeforeConeStack();
                 }
             }
         });
@@ -335,48 +355,80 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
 
 
     public void lowerLiftBeforeConeStack() {
-        whereAmI.setValue("in lowerLiftToGrabConeOnStack");
+            whereAmI.setValue("in lowerLiftBeforeConeStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 1 , -1) {
+            this.addTask(new RunToEncoderValueTask(this, liftMotor, 1000 , -1) {
+                @Override
+                public void handleEvent(RobotEvent e) {
+                    RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
+                    if (evt.kind == EventKind.DONE) {
+                        RobotLog.i("lowered lift before cone stack");
+
+                        driveToConeStack(coneStackPath);
+
+                        //armServo.setPosition(ARM_FRONT);
+                  }
+                }
+            });
+    }
+    public void strafeFromMediumJunction() {
+        whereAmI.setValue("strafeFromMediumJunction");
+
+        gyroTask = new DeadReckonTaskWithIMU(this, coneStrafePath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
-                RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
-                if (evt.kind == EventKind.DONE) {
-                    RobotLog.i("liftedToLowJunction");
-                    // MADDIEFIXME in this current code we're grabbing the cone and raising the
-                    // lift at the same time. There is a possibility that we may be raising the lift
-                    // before the claw can fully extend. In that case we may have to put a delay
-                    // before the lift so we may need to delay.
-                    driveToConeStack(coneStackPath);
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                whereAmI.setValue("strafeFromMediumJunction handleEvent");
 
+                // when path done we are approximatly a foot away from the cone stack
+                if (path.kind == EventKind.PATH_DONE) {
+                    whereAmI.setValue("strafeFromMediumJunction PATH_DONE");
+
+                    // as we're driving closer to the cone stack we're simultaneously lifting the lift
+                    // drivetrain.setTargetYaw(TARGET_YAW_FOR_NEW_DIRECTION);
+                    //  Stack(raiseLiftOffConeStackPath1);raiseLiftOffCone
+
+                    colorDetectionStrafe();
                     //armServo.setPosition(ARM_FRONT);
+                    // driveCloserToConeStack(coneStackCloserPath);
+
                 }
             }
-        });
+        };
+        gyroTask.initializeImu(imu,(double)TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm); //TARGET_YAW_FOR_NEW_DIRECTION testing this on Friday
+        gyroTask.initTelemetry(this.telemetry);
+        //gyroTask.useSmoothStart(true);
+        addTask(gyroTask);
     }
-   
+
+
 
     public void driveToConeStack(DeadReckonPath coneStackPath) {
         whereAmI.setValue("driveToConeStack");
-        RobotLog.i("drives to First Low Junction");
+        RobotLog.i("drives to cone stack line");
 
         gyroTask = new DeadReckonTaskWithIMU(this, coneStackPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
+                whereAmI.setValue("driveToConeStack handleEvent");
+
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 // when path done we are approximatly a foot away from the cone stack
                 if (path.kind == EventKind.PATH_DONE) {
+                    whereAmI.setValue("driveToConeStack PATH_DONE");
+
                     // as we're driving closer to the cone stack we're simultaneously lifting the lift
                     // drivetrain.setTargetYaw(TARGET_YAW_FOR_NEW_DIRECTION);
                   //  Stack(raiseLiftOffConeStackPath1);raiseLiftOffCone
-                    colorDetectionStrafe();
-                    armServo.setPosition(ARM_FRONT);
+                    strafeFromMediumJunction();
+                   // colorDetectionStrafe();
+                    //armServo.setPosition(ARM_FRONT);
                    // driveCloserToConeStack(coneStackCloserPath);
 
                 }
             }
         };
-        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+        gyroTask.initializeImu(imu,(double)TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm); //TARGET_YAW_FOR_NEW_DIRECTION testing this on Friday
         gyroTask.initTelemetry(this.telemetry);
         //gyroTask.useSmoothStart(true);
         addTask(gyroTask);
@@ -384,15 +436,18 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
 
 
     public void driveCloserToConeStack(DeadReckonPath coneStackCloserPath) {
-        whereAmI.setValue("driveToConeStack");
+        whereAmI.setValue("driveCloserToConeStack");
         RobotLog.i("drives to First Low Junction");
 
+      //  this.addTask( new DeadReckonTask(this, coneStackCloserPath, drivetrain){
         gyroTask = new DeadReckonTaskWithIMU(this, coneStackCloserPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
+                whereAmI.setValue("driveCloserToConeStack handleEvent");
                 // when the path is done we have completed the driveCloserToConeStack
                 if (path.kind == EventKind.PATH_DONE) {
+                    whereAmI.setValue("driveCloserToConeStack PATH_DONE");
                     lowerLiftToGrabConeOnStack();
                     coneServo.setPosition(CONE_GRAB);
                   //  raiseLiftOffConeStack(raiseLiftOffConeStackPath2);
@@ -402,7 +457,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
         };
         gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
         gyroTask.initTelemetry(this.telemetry);
-        //gyroTask.useSmoothStart(true);
+      //  gyroTask.useSmoothStart(true);
         addTask(gyroTask);
     }
 
@@ -410,12 +465,15 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     public void lowerLiftToGrabConeOnStack() {
         whereAmI.setValue("in lowerLiftToGrabConeOnStack");
 
-        this.addTask(new RunToEncoderValueTask(this, liftMotor, 600, -1) {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, LOWER_LIFT_TO_CONE_STACK, -0.7) {
             @Override
             public void handleEvent(RobotEvent e) {
                 RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
+                whereAmI.setValue("lowerLiftToGrabConeOnStack handleEvent");
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("liftedToLowJunction");
+                    whereAmI.setValue("lowerLiftToGrabConeOnStack DONE");
+
                     // MADDIEFIXME in this current code we're grabbing the cone and raising the
                     // lift at the same time. There is a possibility that we may be raising the lift
                     // before the claw can fully extend. In that case we may have to put a delay
@@ -441,7 +499,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
                 // when the path is done we have completed the driveCloserToConeStack
                 if (path.kind == EventKind.PATH_DONE) {
                     // FIXME add driveCloserToConeStack
-                    armServo.setPosition(ARM_FRONT);
+                    //coneServo.setPosition(CONE_GRAB);
                   //  raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
                  //   driveCloserToConeStack(coneStackCloserPath);
                 }
@@ -471,12 +529,13 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
                         robot.removeTask(colorSensorTask);
                         gyroTask.resume();
                       // raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
-                       driveCloserToConeStack(coneStackCloserPath);
+                        driveCloserToConeStack(coneStackCloserPath);
                         colorDetectedTlm.setValue("red");
                         break;
                     case BLUE_DETECTED:
                         drivetrain.stop();
                         gyroTask.resume();
+                        driveCloserToConeStack(coneStackCloserPath);
                         colorDetectedTlm.setValue("blue");
                         break;
                     default:
@@ -507,7 +566,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
                        //coneServo.setPosition(CONE_GRAB);
                        // driveCloserToConeStack(coneStackCloserPath);
                        // driveCloserToConeStack();
-                         decideWhichSignalWasSeen();
+                        // decideWhichSignalWasSeen();
                         firstConeLift = false;
                     } else {
                         // at this point we have already lifted the cone off the cone stack
@@ -546,10 +605,10 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     }
 
 
-    public void driveFromConeStackToJunction() {
-        whereAmI.setValue("driveFromConeStackToJunction");
+    public void driveFromConeStackToLowJunction2() {
+        whereAmI.setValue("driveFromConeStackToJunction2");
 
-        gyroTask = new DeadReckonTaskWithIMU(this, coneStackToJunctionPath, drivetrain) {
+        gyroTask = new DeadReckonTaskWithIMU(this,driveFromConeStackPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
@@ -610,6 +669,8 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
         lowerLiftToLowJunctionPath = new DeadReckonPath();
         raiseLiftOffLowJunctionPath = new DeadReckonPath();
 
+        coneStrafePath = new DeadReckonPath();
+
         coneStackPath = new DeadReckonPath();
         raiseLiftOffConeStackPath1 = new DeadReckonPath();
         raiseLiftOffConeStackPath2 = new DeadReckonPath();
@@ -619,6 +680,8 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
         lowerLiftToHighJunctionPath = new DeadReckonPath();
 
         lowerLiftBeforeConeStackPath = new DeadReckonPath();
+
+        driveFromConeStackPath = new DeadReckonPath();
 
         leftPath = new DeadReckonPath();
         middlePath = new DeadReckonPath();
@@ -634,6 +697,11 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
         liftToLowJunctionPath.stop();
         lowerLiftToLowJunctionPath.stop();
         raiseLiftOffLowJunctionPath.stop();
+
+        coneStrafePath.stop();
+
+        driveFromConeStackPath.stop();
+
 
         raiseLiftOffConeStackPath1.stop();
         raiseLiftOffConeStackPath2.stop();
@@ -653,39 +721,64 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
         rightPath.stop();
         coneStackPath.stop();
 
-//        // drives to first low junction
-//        // strafe to left align with low junction
-////        // drive up to ground junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.55);
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 28, -0.40);
 
-        backUpToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.55);
+        // drive straight to medium junction
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19.5, 0.55);
+        //turn to face medium junction
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 32, -0.40);
+
+        // back up to medium junction to score
+        backUpToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.55);
 
 
-//        // back away from low junction
+
        // driveFromLow1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.6); //neg
 //
        // coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5.0, -0.55);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, CONE_STACK_SIDEWAYS_1, -0.45); //6.3
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_1, -0.45); //2 ,-.5
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_FORWARD_2, CONE_STACK_STRAIGHT_FWD_SPEED_2);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_2, -0.9);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
-        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+//        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_1, -0.45); //2 ,-.5
+//        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_FORWARD_2, CONE_STACK_STRAIGHT_FWD_SPEED_2);
+//        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, CONE_STACK_STRAIGHT_BACK_2, -0.9);
+//        coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
+//        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
         //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 0.5); //going to conestack
         //  coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20,  0.65); // neg
 
 
-        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.4);
+        // drive straight off the medium junction
+       // coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, 0.9);
+        // straife to the cone stack
+        coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,DRIVE_FROM_MEDIUM_JUNCTION, 0.5);
+        //coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
+        // drive straight to the cone stack line
+       //coneStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 9, 0.5);
+       //coneStackPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 4, 0.5);
+
+
+        //  coneStackPath.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, -0.40);
+
+
+        colorDetectionStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 5, 0.4);
+
+        coneStrafePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, STRAFE_FROM_MEDIUM_JUNCTION, 0.5);
+        coneStrafePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, STRAIGHT_TO_CONE_STACK, 0.5);
+
+
+
+
+
         // strafes to the tape
         // MADDIEFIXME adjust the drive closer path as necessary so it doesn't ram in to the cone stack
-        coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.25); //distance 7
+        coneStackCloserPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, DRIVE_CLOSER_TO_CONE_STACK, 0.25); //distance 7
+
+        driveFromConeStackPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, DRIVE_FROM_CONE_STACK, -0.5);
+        driveFromConeStackPath.addSegment(DeadReckonPath.SegmentType.TURN, DRIVE_FROM_CONE_STACK, -0.5);
+
 //
         // MADDIEFIXME raise the lift before the cone stack so it doesn't collide with it may need to ADJUST how high to raise the lift
         raiseLiftOffConeStackPath1.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
 
         // MADDIEFIXME raise the lift in order to lift the cone above the cone stack
-        raiseLiftOffConeStackPath2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 1.0);
+        raiseLiftOffConeStackPath2.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 10, 1.0);
 
         // MADDIEFIXME drive back to the lower junction may have to adjust the distance
         coneStackToJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.5);
@@ -776,7 +869,7 @@ public class javabotsscoreonmediumjunctionAUTO extends Robot {
     @Override
     public void start() {
 
-        driveToFromMediumJunction(driveToMedium1Path);
+        driveToMediumJunction(driveToMedium1Path);
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
