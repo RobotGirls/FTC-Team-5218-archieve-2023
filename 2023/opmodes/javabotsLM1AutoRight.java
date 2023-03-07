@@ -88,13 +88,14 @@ public class javabotsLM1AutoRight extends Robot {
     static final double FORWARD_DISTANCE = 6;
     static final double DRIVE_SPEED = -0.5;
 
-    DeadReckonPath driveToGround1Path;
+    DeadReckonPath driveToMedium1Path;
+    DeadReckonPath driveFromMedium1Path;
     DeadReckonPath driveFromGround1Path;
-    DeadReckonPath liftToSmallJunctionPath;
+    DeadReckonPath liftToMediumJunctionPath;
     DeadReckonPath dropToSmallJunctionPath;
     DeadReckonPath secondPath;
-    DeadReckonPath lowerLiftToGroundJunctionPath;
-    DeadReckonPath raiseLiftOffGroundJunctionPath;
+    DeadReckonPath lowerLiftFirstMediumJunctionPath;
+    DeadReckonPath raiseLiftOffFirstMediumJunctionPath;
 
 
     private Telemetry.Item tagIdTlm;
@@ -140,22 +141,38 @@ public class javabotsLM1AutoRight extends Robot {
         detectionTask.init(telemetry, hardwareMap);
     }
 
-    public void liftToFirstGroundJunction()
+    public void liftToFirstMediumJunction()
     {
-        this.addTask(new DeadReckonTask(this, liftToSmallJunctionPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, liftToMediumJunctionPath, liftMotorDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent path = (DeadReckonEvent) e;
                 if (path.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("liftedToGroundJunction");
+                    RobotLog.i("liftedToMediumJunction");
                     //delay(1);
-                 driveToFromFirstGroundJunction(driveToGround1Path);
+                    armServo.setPosition(ARM_BACK);
+                    lowerLiftFirstMediumJunction();
                 }
             }
         });
     }
-
+    public void lowerLiftFirstMediumJunction()
+    {
+        this.addTask(new DeadReckonTask(this, lowerLiftFirstMediumJunctionPath, liftMotorDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("lowerliftToMediumJunction");
+                    //delay(1);
+                    coneServo.setPosition(CONE_RELEASE);
+                    raiseLiftOffFirstMediumJunction();
+                }
+            }
+        });
+    }
     private void decideWhichSignalWasSeen()
     {
 
@@ -168,33 +185,52 @@ public class javabotsLM1AutoRight extends Robot {
         }
     }
 
-    private void driveToFromFirstGroundJunction(DeadReckonPath driveToGround1Path)
-    {
-        whereAmI.setValue("in driveToFromFirstGroundJunction");
-        RobotLog.i("drives to First Ground Junction");
 
-        this.addTask(new DeadReckonTask(this, driveToGround1Path, drivetrain){
+
+    private void driveToMediumJunction(DeadReckonPath driveToMedium1Path)
+    {
+        whereAmI.setValue("in drivetoMediumJunction");
+        RobotLog.i("drives to First medium Junction");
+
+        this.addTask(new DeadReckonTask(this, driveToMedium1Path, drivetrain){
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                if (path.kind == EventKind.PATH_DONE)
+                if(path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("finished parking");
-                    if (goingToLowerJunction) {
-                        lowerLiftToFirstGroundJunction();
-                        goingToLowerJunction = false;
-                    } else {
-                        // have finished backing away from lower junction
-                        decideWhichSignalWasSeen();
+                    liftToFirstMediumJunction();
 
-                    }
-                    //delayAndLowerLift(2);
 
                 }
             }
         });
     }
+    private void driveFromMediumJunction(DeadReckonPath driveFromMedium1Path)
+    {
+        whereAmI.setValue("in driveFromFirstMediumJunction");
+        RobotLog.i("drives to First medium Junction");
 
+        this.addTask(new DeadReckonTask(this, driveFromMedium1Path, drivetrain){
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if(path.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("finished parking");
+
+
+
+                    // have finished backing away from lower junction
+                    decideWhichSignalWasSeen();
+
+
+                //delayAndLowerLift(2);
+
+            }
+        }
+    });
+        }
 
 //    private void lowerToFirstGroundJunction(DeadReckonPath ground1Path)
 //    {
@@ -215,10 +251,10 @@ public class javabotsLM1AutoRight extends Robot {
 //        });
 //    }
 
-    public void lowerLiftToFirstGroundJunction()
+    public void LiftToMediumJunctionPath()
     {
 
-        this.addTask(new DeadReckonTask(this, lowerLiftToGroundJunctionPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, liftToMediumJunctionPath, liftMotorDrivetrain){
 
             @Override
             public void handleEvent (RobotEvent e){
@@ -226,16 +262,17 @@ public class javabotsLM1AutoRight extends Robot {
                 if (path.kind == EventKind.PATH_DONE)
                 {
                     RobotLog.i("liftedToGroundJunction");
-
+                    armServo.setPosition(ARM_BACK);
                     coneServo.setPosition(CONE_RELEASE);
-                    raiseLiftOffFirstGroundJunction();
+
+                    raiseLiftOffFirstMediumJunction();
                 }
             }
         });
     }
-    public void raiseLiftOffFirstGroundJunction()
+    public void raiseLiftOffFirstMediumJunction()
     {
-        this.addTask(new DeadReckonTask(this, raiseLiftOffGroundJunctionPath, liftMotorDrivetrain){
+        this.addTask(new DeadReckonTask(this, raiseLiftOffFirstMediumJunctionPath, liftMotorDrivetrain){
 
             @Override
             public void handleEvent (RobotEvent e){
@@ -244,7 +281,7 @@ public class javabotsLM1AutoRight extends Robot {
                 {
                     RobotLog.i("liftedToGroundJunction");
 
-                    driveToFromFirstGroundJunction(driveFromGround1Path);
+                    driveFromMediumJunction(driveFromMedium1Path);
 
                 }
             }
@@ -274,40 +311,46 @@ public class javabotsLM1AutoRight extends Robot {
         addTask(new SingleShotTimerTask(this, 1000*milliseconds) {
             @Override
             public void handleEvent (RobotEvent e) {
-                        lowerLiftToFirstGroundJunction();
+                //lowerLiftToFirstGroundJunction();
             }
         });
     }
 
     public void initPaths()
     {
-        driveToGround1Path = new DeadReckonPath();
+        driveFromMedium1Path = new DeadReckonPath();
         driveFromGround1Path = new DeadReckonPath();
-        liftToSmallJunctionPath = new DeadReckonPath();
-        lowerLiftToGroundJunctionPath = new DeadReckonPath();
-        raiseLiftOffGroundJunctionPath = new DeadReckonPath();
+        liftToMediumJunctionPath = new DeadReckonPath();
+        lowerLiftFirstMediumJunctionPath = new DeadReckonPath();
+        raiseLiftOffFirstMediumJunctionPath = new DeadReckonPath();
+        driveToMedium1Path = new DeadReckonPath();
 
         leftPath = new DeadReckonPath();
         middlePath = new DeadReckonPath();
         rightPath= new DeadReckonPath();
 
-        driveToGround1Path.stop();
+        driveToMedium1Path.stop();
+        driveFromMedium1Path.stop();
         driveFromGround1Path.stop();
-        liftToSmallJunctionPath.stop();
-        lowerLiftToGroundJunctionPath.stop();
-        raiseLiftOffGroundJunctionPath.stop();
+        liftToMediumJunctionPath.stop();
+        lowerLiftFirstMediumJunctionPath.stop();
+        raiseLiftOffFirstMediumJunctionPath.stop();
         leftPath.stop();
         middlePath.stop();
         rightPath.stop();
 
         // drives to first ground junction
         // straife to left align with ground junction
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2.5, 0.5);
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
-        // back to align with wall since straife drifts
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
-        // drive up to ground junction
-        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 5, 0.5);
+
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,20, 0.6);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN,27.3, -0.6);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,27.3, -0.6);
+
+
+
+
+        driveFromMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2.5, 0.5);
+
 
         // back away from low junction
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
@@ -318,21 +361,21 @@ public class javabotsLM1AutoRight extends Robot {
 
 
         // lifts to small junction
-        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, 0.7);
+        liftToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.7);
 
 
         // lowers lift to the Ground Junction
-        lowerLiftToGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.6);
+        lowerLiftFirstMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, -0.6);
 
         // raise lift off the Ground Junction
-        raiseLiftOffGroundJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.65);
+        raiseLiftOffFirstMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 4, 0.65);
 
 
         // Based on Signal ID:
         // return to initial to go forward then to the left
 
          // strife to left
-        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,18, -0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,16, -0.5);
         // go back to align with the wall
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 3, -0.5);
         // go straignt
@@ -394,7 +437,7 @@ public class javabotsLM1AutoRight extends Robot {
     @Override
     public void start()
     {
-        liftToFirstGroundJunction();
+        driveToMediumJunction(driveToMedium1Path);
         whereAmI.setValue("in Start");
         setAprilTagDetection();
         addTask(detectionTask);
