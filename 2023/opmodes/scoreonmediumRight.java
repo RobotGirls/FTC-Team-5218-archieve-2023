@@ -55,9 +55,9 @@ import team25core.sensors.color.RGBColorSensorTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 @Config
-@Autonomous(name = "leftscoreonmediumONLY")
+@Autonomous(name = "rightscoreonmediumONLY")
 //@Disabled
-public class scoreonmediumONLY extends Robot {
+public class scoreonmediumRight extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -793,24 +793,26 @@ public class scoreonmediumONLY extends Robot {
         // drive straight to medium junction
         driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19.5, 0.55);
         //turn to face medium junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 32, -0.40);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 32, 0.40);
 
         // back up to medium junction to score
         backUpToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.55);
 
 
          // Stays in first parking spot
-       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, -0.5);
-       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, 1);
+     //  leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3.2, 0.5);
+       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
+       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -1);
 
         // return to initial then go forward
-        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,5, -0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,2, -0.5);
        // middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,10, -1);
         ;
         // return to initial then go forward then right
         // strafe to right
-        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, -0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -0.6);
+     //   rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3.2, 0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, 0.6);
      //   rightPath.addSegment(DeadReckonPath.SegmentType.TURN, 2, -0.75);
 
 

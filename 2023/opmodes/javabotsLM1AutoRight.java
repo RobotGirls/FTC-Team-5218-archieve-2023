@@ -362,7 +362,7 @@ public class javabotsLM1AutoRight extends Robot {
         // strife to left
         leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3, -0.5);
         // go back to align with the wall
-        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, 0.5);
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, 0.5);
         // go straignt
        // leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
 
@@ -373,7 +373,7 @@ public class javabotsLM1AutoRight extends Robot {
         // straife to right
         rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3, -0.5);
         // go back align with wall
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 8, -0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -0.5);
         // go straight
        // rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.5);
     }
