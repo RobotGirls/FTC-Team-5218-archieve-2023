@@ -147,7 +147,7 @@ public class scoreonmediumRight extends Robot {
     DeadReckonPath liftToLowJunctionPath;
     DeadReckonPath lowerLiftToLowJunctionPath;
     DeadReckonPath raiseLiftOffLowJunctionPath;
-
+    DeadReckonPath driveFromMediumJunctionPath;
     DeadReckonPath driveFromLowJunctionPath;
     DeadReckonPath lowerLiftToHighJunctionPath;
 
@@ -308,7 +308,27 @@ public class scoreonmediumRight extends Robot {
         addTask(gyroTask);
 //        }
     }
-
+    private void driveFromMediumJunction (DeadReckonPath backUpToMediumJunctionPath) {
+        whereAmI.setValue("drive from MediumJunction");
+        RobotLog.i("drive from medium junction");
+        gyroTask = new DeadReckonTaskWithIMU(this, backUpToMediumJunctionPath, drivetrain)
+                //this.addTask(new DeadReckonTask(this, backUpToMediumJunctionPath, drivetrain)
+        {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                DeadReckonEvent path = (DeadReckonEvent) e;
+                if (path.kind == EventKind.PATH_DONE) {
+                    RobotLog.i("finished parking");
+                    decideWhichSignalWasSeen();
+                }
+            }
+        };
+//        if (goingToLowerJunction) {
+        gyroTask.initializeImu(imu, (double) TARGET_YAW_FOR_DRIVING_STRAIGHT, showHeading, headingTlm);
+        gyroTask.initTelemetry(this.telemetry);
+        addTask(gyroTask);
+//        }
+    }
     public void lowerLiftToFirstMediumJunction() {
         whereAmI.setValue("in lowerLiftToFirstMediumJunction");
 
@@ -339,7 +359,7 @@ public class scoreonmediumRight extends Robot {
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("raiseLiftOffFirstMediumJunction");
                    // driveToFromFirstLowJunction(driveFromLow1Path);
-                   decideWhichSignalWasSeen();
+                    driveFromMediumJunction(driveFromMediumJunctionPath);
                 }
             }
         });
@@ -481,7 +501,7 @@ public class scoreonmediumRight extends Robot {
 
     public void colorDetectionStrafe() {
         whereAmI.setValue("colorDetectionStrafe");
-        handleColorSensor();
+        // handleColorSensor();
         gyroTask = new DeadReckonTaskWithIMU(this, colorDetectionStrafePath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
@@ -502,43 +522,43 @@ public class scoreonmediumRight extends Robot {
         addTask(gyroTask);
     }
 
-    public void handleColorSensor () {
-        whereAmI.setValue("handleColorSensor");
-        colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
-            public void handleEvent(RobotEvent e) {
-                whereAmI.setValue("handleColorSensor handleEvent");
-                ColorSensorEvent event = (ColorSensorEvent) e;
-                colorArray = colorSensorTask.getColors();
-                blueDetectedTlm.setValue(colorArray[0]);
-                redDetectedTlm.setValue(colorArray[1]);
-                greenDetectedTlm.setValue(colorArray[2]);
-                switch(event.kind) {
-                    // red is at the end
-                    case RED_DETECTED:
-                        drivetrain.stop();
-                        robot.removeTask(colorSensorTask);
-                        gyroTask.resume();
-                      // raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
-                        driveCloserToConeStack(coneStackCloserPath);
-                        colorDetectedTlm.setValue("red");
-                        break;
-                    case BLUE_DETECTED:
-                        drivetrain.stop();
-                        robot.removeTask(colorSensorTask);
-                        gyroTask.resume();
-                        driveCloserToConeStack(coneStackCloserPath);
-                        colorDetectedTlm.setValue("blue");
-                        break;
-                    default:
-                        colorDetectedTlm.setValue("none");
-                        break;
-                }
-            }
-        };
-        colorSensorTask.setThresholds(10000, 10000, 5000);
-        colorSensorTask.setDrivetrain(drivetrain);
-        addTask(colorSensorTask);
-    }
+//    public void handleColorSensor () {
+//        whereAmI.setValue("handleColorSensor");
+//        colorSensorTask = new RGBColorSensorTask(this, groundColorSensor) {
+//            public void handleEvent(RobotEvent e) {
+//                whereAmI.setValue("handleColorSensor handleEvent");
+//                ColorSensorEvent event = (ColorSensorEvent) e;
+//                colorArray = colorSensorTask.getColors();
+//                blueDetectedTlm.setValue(colorArray[0]);
+//                redDetectedTlm.setValue(colorArray[1]);
+//                greenDetectedTlm.setValue(colorArray[2]);
+//                switch(event.kind) {
+//                    // red is at the end
+//                    case RED_DETECTED:
+//                        drivetrain.stop();
+//                        robot.removeTask(colorSensorTask);
+//                        gyroTask.resume();
+//                      // raiseLiftOffConeStack(raiseLiftOffConeStackPath1);
+//                        driveCloserToConeStack(coneStackCloserPath);
+//                        colorDetectedTlm.setValue("red");
+//                        break;
+//                    case BLUE_DETECTED:
+//                        drivetrain.stop();
+//                        robot.removeTask(colorSensorTask);
+//                        gyroTask.resume();
+//                        driveCloserToConeStack(coneStackCloserPath);
+//                        colorDetectedTlm.setValue("blue");
+//                        break;
+//                    default:
+//                        colorDetectedTlm.setValue("none");
+//                        break;
+//                }
+//            }
+//        };
+//        colorSensorTask.setThresholds(10000, 10000, 5000);
+//        colorSensorTask.setDrivetrain(drivetrain);
+//        addTask(colorSensorTask);
+//    }
 
     public void raiseLiftOffConeStack(DeadReckonPath coneStackLiftPath) {
         whereAmI.setValue("in raiseLiftOffConeStack");
@@ -728,6 +748,7 @@ public class scoreonmediumRight extends Robot {
         lowerLiftToLowJunctionPath = new DeadReckonPath();
         raiseLiftOffLowJunctionPath = new DeadReckonPath();
         driveFromLowJunctionPath = new DeadReckonPath();
+        driveFromMediumJunctionPath = new DeadReckonPath();
 
         coneStrafePath = new DeadReckonPath();
 
@@ -773,6 +794,7 @@ public class scoreonmediumRight extends Robot {
         driveToHighJunctionPath.stop();
         raiseLiftToHighJunctionPath.stop();
         lowerLiftToHighJunctionPath.stop();
+        driveFromMediumJunctionPath.stop();
 
         lowerLiftBeforeConeStackPath.stop();
         coneStackCloserPath.stop();
@@ -791,28 +813,30 @@ public class scoreonmediumRight extends Robot {
 
 
         // drive straight to medium junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19.5, 0.55);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 21, 0.50);
         //turn to face medium junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 32, 0.40);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 27.3, 0.45);
 
         // back up to medium junction to score
         backUpToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.55);
-
+        driveFromMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, 0.55);
 
          // Stays in first parking spot
      //  leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3.2, 0.5);
-       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -1);
+       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,2.5, 0.55);
+       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, -0.50);
+       // leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 2, -0.45);
+     //   leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS, 2, -0.50);
 
         // return to initial then go forward
-        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,2, -0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,1, -0.5);
        // middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,10, -1);
         ;
         // return to initial then go forward then right
         // strafe to right
      //   rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3.2, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, 0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, 0.6);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,11, 0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11.5, 0.55);
      //   rightPath.addSegment(DeadReckonPath.SegmentType.TURN, 2, -0.75);
 
 

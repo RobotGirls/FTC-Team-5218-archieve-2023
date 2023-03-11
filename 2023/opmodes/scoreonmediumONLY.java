@@ -115,8 +115,9 @@ public class scoreonmediumONLY extends Robot {
 
     private DeadReckonPath coneStrafePath;
     private DeadReckonPath coneStackLiftPath;
-
     private DeadReckonPath coneStrafeAwayPath;
+
+
 
     public static int SIGNAL_LEFT = 5;
     public static int SIGNAL_MIDDLE = 2;
@@ -147,7 +148,7 @@ public class scoreonmediumONLY extends Robot {
     DeadReckonPath liftToLowJunctionPath;
     DeadReckonPath lowerLiftToLowJunctionPath;
     DeadReckonPath raiseLiftOffLowJunctionPath;
-
+    DeadReckonPath driveFromMediumJunctionPath;
     DeadReckonPath driveFromLowJunctionPath;
     DeadReckonPath lowerLiftToHighJunctionPath;
 
@@ -339,7 +340,7 @@ public class scoreonmediumONLY extends Robot {
                 if (evt.kind == EventKind.DONE) {
                     RobotLog.i("raiseLiftOffFirstMediumJunction");
                    // driveToFromFirstLowJunction(driveFromLow1Path);
-                   decideWhichSignalWasSeen();
+                   driveFromMediumJunction(driveFromMediumJunctionPath);
                 }
             }
         });
@@ -361,25 +362,25 @@ public class scoreonmediumONLY extends Robot {
                 }
             });
     }
-    public void strafeFromMediumJunction() {
-        whereAmI.setValue("strafeFromMediumJunction");
+    public void driveFromMediumJunction() {
+        whereAmI.setValue("driveFromMediumJunction");
 
-        gyroTask = new DeadReckonTaskWithIMU(this, coneStrafePath, drivetrain) {
+        gyroTask = new DeadReckonTaskWithIMU(this, driveFromMediumJunctionPath, drivetrain) {
             @Override
             public void handleEvent(RobotEvent e) {
                 DeadReckonEvent path = (DeadReckonEvent) e;
-                whereAmI.setValue("strafeFromMediumJunction handleEvent");
+                whereAmI.setValue("driveFromMediumJunction handleEvent");
 
                 // when path done we are approximatly a foot away from the cone stack
                 if (path.kind == EventKind.PATH_DONE) {
-                    whereAmI.setValue("strafeFromMediumJunction PATH_DONE");
+                    whereAmI.setValue("driveFromMediumJunction PATH_DONE");
 
                     // as we're driving closer to the cone stack we're simultaneously lifting the lift
                     // drivetrain.setTargetYaw(TARGET_YAW_FOR_NEW_DIRECTION);
                     //  Stack(raiseLiftOffConeStackPath1);raiseLiftOffCone
 
-                    colorDetectionStrafe();
-                    //armServo.setPosition(ARM_FRONT);
+                        decideWhichSignalWasSeen();
+//armServo.setPosition(ARM_FRONT);
                     // driveCloserToConeStack(coneStackCloserPath);
 
                 }
@@ -410,7 +411,7 @@ public class scoreonmediumONLY extends Robot {
                     // as we're driving closer to the cone stack we're simultaneously lifting the lift
                     // drivetrain.setTargetYaw(TARGET_YAW_FOR_NEW_DIRECTION);
                   //  Stack(raiseLiftOffConeStackPath1);raiseLiftOffCone
-                    strafeFromMediumJunction();
+                    // strafeFromMediumJunction();
                    // colorDetectionStrafe();
                     //armServo.setPosition(ARM_FRONT);
                    // driveCloserToConeStack(coneStackCloserPath);
@@ -738,6 +739,7 @@ public class scoreonmediumONLY extends Robot {
         driveFromHighJunctionPath = new DeadReckonPath();
         raiseLiftToHighJunctionPath = new DeadReckonPath();
         lowerLiftToHighJunctionPath = new DeadReckonPath();
+        driveFromMediumJunctionPath = new DeadReckonPath();
 
         lowerLiftBeforeConeStackPath = new DeadReckonPath();
 
@@ -767,7 +769,7 @@ public class scoreonmediumONLY extends Robot {
 
         driveFromConeStackPath.stop();
 
-
+        driveFromMediumJunctionPath.stop();
         raiseLiftOffConeStackPath1.stop();
         raiseLiftOffConeStackPath2.stop();
         driveToHighJunctionPath.stop();
@@ -791,26 +793,28 @@ public class scoreonmediumONLY extends Robot {
 
 
         // drive straight to medium junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 19.5, 0.55);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 21, 0.55);
         //turn to face medium junction
-        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 32, -0.40);
+        driveToMedium1Path.addSegment(DeadReckonPath.SegmentType.TURN, 27.5, -0.45);
 
         // back up to medium junction to score
         backUpToMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, -0.55);
 
+        driveFromMediumJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 1.5, 0.55);
+
 
          // Stays in first parking spot
-       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, -0.5);
-       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, 1);
+       leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,2.5, 0.5);
+       leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 12, .5);
 
         // return to initial then go forward
-        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,5, -0.5);
+        middlePath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,1, -0.5);
        // middlePath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,10, -1);
         ;
         // return to initial then go forward then right
         // strafe to right
-        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,3.2, -0.5);
-        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 14, -0.6);
+        rightPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,10, 0.5);
+        rightPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 11, -0.6);
      //   rightPath.addSegment(DeadReckonPath.SegmentType.TURN, 2, -0.75);
 
 
