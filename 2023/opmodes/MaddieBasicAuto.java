@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import team25core.DeadReckonPath;
 import team25core.DeadReckonTask;
+import team25core.FourWheelDirectDrivetrain;
 import team25core.MaddiesDriveTrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.RobotEvent;
@@ -16,27 +17,33 @@ import team25core.StandardFourMotorRobot;
 @Autonomous (name = "MaddieAuto",group = "java")
 public class MaddieBasicAuto extends StandardFourMotorRobot {
 
-    private MaddiesDriveTrain drivetrain;
 
-    private OneWheelDirectDrivetrain frontLeftWheel;
-    private OneWheelDirectDrivetrain frontRightWheel;
-    private OneWheelDirectDrivetrain backLeftWheel;
-    private OneWheelDirectDrivetrain backRightWheel;
+   private static String TAG = "Maddie";
+    private FourWheelDirectDrivetrain drivetrain;
+
+    private OneWheelDirectDrivetrain frontLeftWheelDrivetrain;
+    private OneWheelDirectDrivetrain frontRightWheelDrivetrain;
+    private OneWheelDirectDrivetrain backLeftWheelDrivetrain;
+    private OneWheelDirectDrivetrain backRightWheelDrivetrain;
 
 
     private Telemetry.Item eventTlm;
     private DeadReckonPath leftPath;
     private DeadReckonPath oneWheelPath;
 
-    public void oneWheelDrive(OneWheelDirectDrivetrain theWheel)
+
+
+
+
+    public void driveMaddiesPath(FourWheelDirectDrivetrain theDrivetrain)
     {
-        this.addTask(new DeadReckonTask(this,oneWheelPath, theWheel){
+        this.addTask(new DeadReckonTask(this, leftPath, theDrivetrain){
             @Override
             public void handleEvent (RobotEvent e){
                 DeadReckonEvent pathEvent = (DeadReckonEvent) e;
                 if (pathEvent.kind == EventKind.PATH_DONE)
                 {
-                    RobotLog.i("liftedToGroundJunction");
+                    RobotLog.i("left path is done");
                     eventTlm.setValue("path is done");
 
                 }
@@ -48,57 +55,26 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
         });
     }
 
-    public void driveMaddiesPath()
-    {
-        this.addTask(new DeadReckonTask(this, leftPath, drivetrain){
-            @Override
-            public void handleEvent (RobotEvent e){
-                DeadReckonEvent pathEvent = (DeadReckonEvent) e;
-                if (pathEvent.kind == EventKind.PATH_DONE)
-                {
-                    RobotLog.i("liftedToGroundJunction");
-                    eventTlm.setValue("path is done");
 
-                }
-                else if(pathEvent.kind == EventKind.SEGMENT_DONE){
-                    eventTlm.setValue("segment is done");
-
-                }
-            }
-        });
-    }
-
-    @Override
-    public void start(){
-        //driveMaddiesPath();
-        oneWheelDrive(frontLeftWheel);
-        oneWheelDrive(frontRightWheel);
-        oneWheelDrive(backLeftWheel);
-        oneWheelDrive(backRightWheel);
-
-
-
-
-    }
     public void init() {
         super.init(); //taking parents init(hardware mapping)
         //instantiating the MaddiesDriveTrain
-        frontLeftWheel = new OneWheelDirectDrivetrain(frontLeft);
-        frontLeftWheel.resetEncoders();
-        frontLeftWheel.encodersOn();
-
-        frontRightWheel = new OneWheelDirectDrivetrain(frontRight);
-        frontRightWheel.resetEncoders();
-        frontRightWheel.encodersOn();
-
-        backLeftWheel = new OneWheelDirectDrivetrain(backLeft);
-        backLeftWheel.resetEncoders();
-        backLeftWheel.encodersOn();
-
-        backRightWheel = new OneWheelDirectDrivetrain(backRight);
-        backRightWheel.resetEncoders();
-        backRightWheel.encodersOn();
-        drivetrain = new MaddiesDriveTrain(frontRight, backRight, frontLeft, backLeft); // contrustor is instantiating MaddiesDriveTrain class
+//        frontLeftWheelDrivetrain = new OneWheelDirectDrivetrain(frontLeft);
+//        frontLeftWheelDrivetrain.resetEncoders();
+//        frontLeftWheelDrivetrain.encodersOn();
+//
+//        frontRightWheelDrivetrain = new OneWheelDirectDrivetrain(frontRight);
+//        frontRightWheelDrivetrain.resetEncoders();
+//        frontRightWheelDrivetrain.encodersOn();
+//
+//        backLeftWheelDrivetrain = new OneWheelDirectDrivetrain(backLeft);
+//        backLeftWheelDrivetrain.resetEncoders();
+//        backLeftWheelDrivetrain.encodersOn();
+//
+//        backRightWheelDrivetrain = new OneWheelDirectDrivetrain(backRight);
+//        backRightWheelDrivetrain.resetEncoders();
+//        backRightWheelDrivetrain.encodersOn();
+        drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft); // constructor is instantiating MaddiesDriveTrain class
 
         // uncomment and call this method only if the robot is going opposite direction from expecteed
         // drivetrain.setCanonicalMotorDirection()
@@ -106,7 +82,7 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
         //motor will try to tun at the targeted velocity
         drivetrain.encodersOn();
         //Sets the behavior of the motor when a power level of zero is applied ie. stop moving
-        drivetrain.brakeOnZeroPower();
+       // drivetrain.brakeOnZeroPower();
 
         //sets the motor encoder position to zero
         drivetrain.resetEncoders();
@@ -128,11 +104,40 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
 
 
         leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,10, 0.5);
-        //leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,6, 0.6);
-       // leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,6, -0.6);
+        leftPath.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,6, 0.6);
+        leftPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT,6, -0.6);
 
 
 
     }
+    public void myDrive(FourWheelDirectDrivetrain theDrivetrain)
+    {
+        this.addTask(new DeadReckonTask(this,oneWheelPath, theDrivetrain){
+            @Override
+            public void handleEvent (RobotEvent e){
+                DeadReckonEvent pathEvent = (DeadReckonEvent) e;
+                if (pathEvent.kind == EventKind.PATH_DONE)
+                {
+                    RobotLog.i("liftedToGroundJunction");
+                    eventTlm.setValue("path is done");
+
+                }
+                else if(pathEvent.kind == EventKind.SEGMENT_DONE){
+                    eventTlm.setValue("segment is done");
+
+                }
+            }
+        });
+    }
+
+    @Override
+    public void start(){
+        RobotLog.ii(TAG,"start");
+        eventTlm.setValue("I'm in start");
+        driveMaddiesPath(drivetrain);
+
+    }
+
+
 }
 
