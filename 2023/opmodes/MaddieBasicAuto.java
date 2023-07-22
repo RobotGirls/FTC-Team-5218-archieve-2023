@@ -12,6 +12,7 @@ import team25core.FourWheelDirectDrivetrain;
 import team25core.MaddiesDriveTrain;
 import team25core.OneWheelDirectDrivetrain;
 import team25core.RobotEvent;
+import team25core.RunToEncoderValueTask;
 import team25core.StandardFourMotorRobot;
 
 @Autonomous (name = "MaddieAuto",group = "java")
@@ -26,10 +27,17 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
     private OneWheelDirectDrivetrain backLeftWheelDrivetrain;
     private OneWheelDirectDrivetrain backRightWheelDrivetrain;
 
+    private OneWheelDirectDrivetrain liftMotorDrivetrain;
+    private DcMotor liftMotor;
+
+
 
     private Telemetry.Item eventTlm;
     private DeadReckonPath leftPath;
     private DeadReckonPath oneWheelPath;
+
+    public static int RAISE_LIFT = 1500;
+
 
 
 
@@ -45,10 +53,23 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
                 {
                     RobotLog.i("left path is done");
                     eventTlm.setValue("path is done");
+                    raiseLiftMotorPath();
 
                 }
                 else if(pathEvent.kind == EventKind.SEGMENT_DONE){
                     eventTlm.setValue("segment is done");
+
+                }
+            }
+        });
+    }
+    public void raiseLiftMotorPath() {
+        this.addTask(new RunToEncoderValueTask(this, liftMotor, RAISE_LIFT , 1) {
+            @Override
+            public void handleEvent(RobotEvent e) {
+                RunToEncoderValueEvent evt = (RunToEncoderValueEvent)e;
+                if (evt.kind == EventKind.DONE) {
+                    RobotLog.i("raiseLift");
 
                 }
             }
@@ -62,6 +83,8 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
 //        frontLeftWheelDrivetrain = new OneWheelDirectDrivetrain(frontLeft);
 //        frontLeftWheelDrivetrain.resetEncoders();
 //        frontLeftWheelDrivetrain.encodersOn();
+
+        liftMotor = hardwareMap.get(DcMotor.class, "liftMotor");
 //
 //        frontRightWheelDrivetrain = new OneWheelDirectDrivetrain(frontRight);
 //        frontRightWheelDrivetrain.resetEncoders();
@@ -76,6 +99,11 @@ public class MaddieBasicAuto extends StandardFourMotorRobot {
 //        backRightWheelDrivetrain.encodersOn();
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft); // constructor is instantiating MaddiesDriveTrain class
 
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        liftMotorDrivetrain = new OneWheelDirectDrivetrain(liftMotor);
+        liftMotorDrivetrain.resetEncoders();
+        liftMotorDrivetrain.encodersOn();
         // uncomment and call this method only if the robot is going opposite direction from expecteed
         // drivetrain.setCanonicalMotorDirection()
 
