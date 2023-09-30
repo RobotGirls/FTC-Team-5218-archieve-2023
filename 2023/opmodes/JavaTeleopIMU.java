@@ -165,7 +165,7 @@ public class JavaTeleopIMU extends StandardFourMotorRobot {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS; //changed back to Radians
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES; //changed back to Radians
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;//New
         // Without this, data retrieving from the IMU throws an exception
         parameters.mode = BNO055IMU.SensorMode.IMU;//New

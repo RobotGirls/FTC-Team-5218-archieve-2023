@@ -65,8 +65,9 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
     private static final double CONE_GRAB = 0.12;
     private static final double CONE_RELEASE = 1.00;
 
-    private static final double ARM_FRONT = 0.8;
-    private static final double ARM_BACK = 0;
+    private static final double ARM_FRONT = 0.875;
+    private static final double ARM_BACK = 0.089;
+    //0.0918
 
     private static final double ALIGNER_FRONT = .6;
     private static final double ALIGNER_BACK = .2;
@@ -117,9 +118,14 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
 
         coneServo.setPosition(CONE_GRAB);
         junctionAligner.setPosition(.2);
-        armServo.setPosition(0.8);
+        armServo.setPosition(ARM_FRONT);
 
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //telemetry
         buttonTlm = telemetry.addData("buttonState", "unknown");
@@ -164,7 +170,7 @@ public class TwoStickTeleop extends StandardFourMotorRobot {
                         // If slow, then normal speed. If fast, then slow speed of motors.
                         //pertains to slowmode
                         if (currentlySlow) {
-                            drivetask.slowDown(0.7);
+                            drivetask.slowDown(8.5);
                             currentlySlow = false;
                         } else {
                             drivetask.slowDown(0.3);

@@ -51,10 +51,10 @@ import team25core.SingleShotTimerTask;
 import team25core.vision.apriltags.AprilTagDetectionTask;
 
 
-@Autonomous(name = "javabotsLM1Auto5")
+@Autonomous(name = "javabotsLM1AutoLeft")
 //@Disabled
 //@Config
-public class javabotsLM1Auto extends Robot {
+public class javabotsLM1AutoLeft extends Robot {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -70,11 +70,12 @@ public class javabotsLM1Auto extends Robot {
     private Servo coneServo;
     private Servo armServo;
 
-    private static final double CONE_GRAB = 0.2;
-    private static final double CONE_RELEASE = 0.67;
+    private static final double CONE_GRAB = 0.12;
+    private static final double CONE_RELEASE = 1.00;
 
-    private static final double ARM_FRONT = .8;
-    private static final double ARM_BACK = 0;
+    private static final double ARM_FRONT = .875;
+    private static final double ARM_BACK = 0.0918;
+    
     private DeadReckonPath leftPath;
     private DeadReckonPath middlePath;
     private DeadReckonPath rightPath;
@@ -302,6 +303,7 @@ public class javabotsLM1Auto extends Robot {
 
         // drives to first ground junction
         // straife to left align with ground junction
+        driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2.5, 0.5);
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, 0.5);
         // back to align with wall since straife drifts
         driveToGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,2, -0.5);
@@ -311,13 +313,13 @@ public class javabotsLM1Auto extends Robot {
         // back away from low junction
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,8, -0.5);
         // strife to the left
-        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, -0.5);
+        driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.SIDEWAYS,9, - 0.5);
         // back up to align with the wall
         driveFromGround1Path.addSegment(DeadReckonPath.SegmentType.STRAIGHT,3, -0.5);
 
 
         // lifts to small junction
-        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 20, 0.7);
+        liftToSmallJunctionPath.addSegment(DeadReckonPath.SegmentType.STRAIGHT, 25, 0.7);
 
 
         // lowers lift to the Ground Junction
@@ -368,6 +370,11 @@ public class javabotsLM1Auto extends Robot {
 
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         drivetrain = new FourWheelDirectDrivetrain(frontRight, backRight, frontLeft, backLeft);
         drivetrain.resetEncoders();
